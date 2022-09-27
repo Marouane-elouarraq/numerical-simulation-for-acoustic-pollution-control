@@ -509,8 +509,8 @@ def find_alpha_3(choice):
         nelems = len(p_elem2nodes)-1
 
         h_values1.append(compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice)[0])
-        h_values2.append(compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice)[1])
-        h_values3.append(compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice)[2])
+        h_values2.append(compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice+1)[1])
+        h_values3.append(compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice+2)[2])
         # -- set boundary geometry
         # boundary composed of nodes
         # .. todo:: Modify the lines below to select the ids of the nodes on the boundary of the different geometry.
