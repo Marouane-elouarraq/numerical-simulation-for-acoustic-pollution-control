@@ -582,15 +582,15 @@ def find_alpha_3(choice):
 
 
     # slope, intercept, r_value, p_value, std_err = linregress(h_values_log, error_values_log)
-    # matplotlib.pyplot.plot(h_values1_log, error_values_log)
-    # matplotlib.pyplot.plot(h_values2_log, error_values_log)
-    # matplotlib.pyplot.plot(h_values3_log, error_values_log)
-    # matplotlib.pyplot.xlabel("nelem values (log scale)")
-    # matplotlib.pyplot.ylabel("error values (log scale)")
+    matplotlib.pyplot.plot(h_values1_log, error_values_log)
+    matplotlib.pyplot.plot(h_values2_log, error_values_log)
+    matplotlib.pyplot.plot(h_values3_log, error_values_log)
+    matplotlib.pyplot.xlabel("nelem values (log scale)")
+    matplotlib.pyplot.ylabel("error values (log scale)")
     # matplotlib.pyplot.title("slope : {}".format(slope))
-    # matplotlib.pyplot.show()
-    # return
-    print(h_values1_log, h_values2_log, h_values3_log)
+    matplotlib.pyplot.show()
+    return
+    # print(h_values1_log, h_values2_log, h_values3_log)
 
 
 
