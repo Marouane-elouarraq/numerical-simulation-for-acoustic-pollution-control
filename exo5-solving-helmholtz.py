@@ -581,13 +581,16 @@ def find_alpha_3(choice):
     h_values3_log = [numpy.log(x) for x in h_values3]
 
 
-    # slope, intercept, r_value, p_value, std_err = linregress(h_values_log, error_values_log)
-    matplotlib.pyplot.plot(h_values1_log, error_values_log)
-    matplotlib.pyplot.plot(h_values2_log, error_values_log)
-    matplotlib.pyplot.plot(h_values3_log, error_values_log)
+    slope1, intercept1, r_value1, p_value1, std_err1 = linregress(h_values1_log, error_values_log)
+    slope2, intercept2, r_value2, p_value2, std_err2 = linregress(h_values2_log, error_values_log)
+    slope3, intercept3, r_value3, p_value3, std_err3 = linregress(h_values2_log, error_values_log)
+    matplotlib.pyplot.plot(h_values1_log, error_values_log, label = "{}".format(slope1))
+    matplotlib.pyplot.plot(h_values2_log, error_values_log, label = "{}".format(slope2))
+    matplotlib.pyplot.plot(h_values3_log, error_values_log, label = "{}".format(slope3))
     matplotlib.pyplot.xlabel("nelem values (log scale)")
     matplotlib.pyplot.ylabel("error values (log scale)")
     # matplotlib.pyplot.title("slope : {}".format(slope))
+    matplotlib.pyplot.legend()
     matplotlib.pyplot.show()
     return
     # print(h_values1_log, h_values2_log, h_values3_log)
