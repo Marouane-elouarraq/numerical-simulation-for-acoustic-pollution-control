@@ -505,17 +505,15 @@ def split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes):
     number_elem = len(p_elem2nodes)-1
     spacedim = node_coords.shape[1]
     new_p_elem2nodes = numpy.zeros(2*number_elem+1, dtype=int)
-    for i in range(0, 2*number_elem):
+    for i in range(0, 2*number_elem+1):
         new_p_elem2nodes[i] = 3*i
     new_elem2nodes = numpy.zeros(6*number_elem, dtype=int)
     for i in range(number_elem):
         x, y = p_elem2nodes[i], p_elem2nodes[i+1]
-        u1, u2, u3 = new_p_elem2nodes[i], new_p_elem2nodes[i+1], new_p_elem2nodes[i+2]
+        u1, u2, u3 = new_p_elem2nodes[2*i], new_p_elem2nodes[2*i+1], new_p_elem2nodes[2*i+2]
         necessary_nodes = elem2nodes[x:y]
-        new_elem2nodes[u1:u2] = numpy.array(
-            [necessary_nodes[0], necessary_nodes[1], necessary_nodes[2]])
-        new_elem2nodes[u2:u3] = numpy.array(
-            [necessary_nodes[0], necessary_nodes[2], necessary_nodes[3]])
+        new_elem2nodes[u1:u2] = numpy.array([necessary_nodes[0], necessary_nodes[1], necessary_nodes[2]])
+        new_elem2nodes[u2:u3] = numpy.array([necessary_nodes[0], necessary_nodes[2], necessary_nodes[3]])
     return new_node_coords, new_p_elem2nodes, new_elem2nodes
 
 
@@ -536,7 +534,8 @@ def test_split():
     ax = matplotlib.pyplot.subplot(1, 1, 1)
     ax.set_aspect('equal')
     ax.axis('off')
-    solutions._plot_mesh(new_p_elem2nodes, new_elem2nodes, new_node_coords, color='yellow')
+    solutions._plot_mesh(new_p_elem2nodes, new_elem2nodes,
+                         new_node_coords, color='yellow')
     matplotlib.pyplot.show()
     return
     # print(new_node_coords, node_coords)
