@@ -510,8 +510,7 @@ def split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes):
     new_elem2nodes = numpy.zeros(6*number_elem, dtype=int)
     for i in range(number_elem):
         x, y = p_elem2nodes[i], p_elem2nodes[i+1]
-        u1, u2, u3 = new_p_elem2nodes[i], new_p_elem2nodes[i +
-                                                           1], new_p_elem2nodes[i+2]
+        u1, u2, u3 = new_p_elem2nodes[i], new_p_elem2nodes[i+1], new_p_elem2nodes[i+2]
         necessary_nodes = elem2nodes[x:y]
         new_elem2nodes[u1:u2] = numpy.array(
             [necessary_nodes[0], necessary_nodes[1], necessary_nodes[2]])
@@ -521,7 +520,7 @@ def split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes):
 
 
 def test_split():
-    xmin, xmax, ymin, ymax = 0.0, 2.0, 0.0, 2.0
+    xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
     nelemsx, nelemsy = 10, 10
     nelems = nelemsx * nelemsy
     nnodes = (nelemsx + 1) * (nelemsy + 1)
@@ -530,16 +529,17 @@ def test_split():
     # .. note:: If you do not succeed, uncomment the following line to access the solution
     node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_quadmesh(
         xmin, xmax, ymin, ymax, nelemsx, nelemsy)
-    new_coords, new_p_elem2nodes, new_elem2nodes = split_quadrangle_into_triangle(
+    new_node_coords, new_p_elem2nodes, new_elem2nodes = split_quadrangle_into_triangle(
         node_coords, p_elem2nodes, elem2nodes)
 
     fig = matplotlib.pyplot.figure(1)
     ax = matplotlib.pyplot.subplot(1, 1, 1)
     ax.set_aspect('equal')
     ax.axis('off')
-    solutions._plot_mesh(p_elem2nodes, elem2nodes, node_coords, color='yellow')
+    solutions._plot_mesh(new_p_elem2nodes, new_elem2nodes, new_node_coords, color='yellow')
     matplotlib.pyplot.show()
     return
+    # print(new_node_coords, node_coords)
 
 
 if __name__ == '__main__':
@@ -550,5 +550,6 @@ if __name__ == '__main__':
     # run_exercise_d()
     # helmholtz_resonator()
     # criteria_functions_testing()
+    # shuffled_quadrangle_grid()
     test_split()
     print('End.')
