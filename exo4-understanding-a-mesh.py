@@ -500,6 +500,48 @@ def tight_helmholtz_resonator(xmin=0.0, xmax=2.0, ymin=0.0, ymax=1.0):
     return
 
 
+def split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes):
+    new_node_coords = node_coords
+    number_elem = len(p_elem2nodes)-1
+    spacedim = node_coords.shape[1]
+    new_p_elem2nodes = numpy.zeros(2*number_elem+1, dtype=int)
+    for i in range(0, 2*number_elem):
+        new_p_elem2nodes[i] = 3*i
+    new_elem2nodes = numpy.zeros(6*number_elem, dtype=int)
+    for i in range(number_elem):
+        x, y = p_elem2nodes[i], p_elem2nodes[i+1]
+        u1, u2, u3 = new_p_elem2nodes[i], new_p_elem2nodes[i +
+                                                           1], new_p_elem2nodes[i+2]
+        necessary_nodes = elem2nodes[x:y]
+        new_elem2nodes[u1:u2] = numpy.array(
+            [necessary_nodes[0], necessary_nodes[1], necessary_nodes[2]])
+        new_elem2nodes[u2:u3] = numpy.array(
+            [necessary_nodes[0], necessary_nodes[2], necessary_nodes[3]])
+    return new_node_coords, new_p_elem2nodes, new_elem2nodes
+
+
+def test_split():
+    xmin, xmax, ymin, ymax = 0.0, 2.0, 0.0, 2.0
+    nelemsx, nelemsy = 10, 10
+    nelems = nelemsx * nelemsy
+    nnodes = (nelemsx + 1) * (nelemsy + 1)
+    # .. todo:: Modify the line below to call to generate a grid with quadrangles
+    # p_elem2nodes, elem2nodes, node_coords, node_l2g = my_set_quadmesh(...)
+    # .. note:: If you do not succeed, uncomment the following line to access the solution
+    node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_quadmesh(
+        xmin, xmax, ymin, ymax, nelemsx, nelemsy)
+    new_coords, new_p_elem2nodes, new_elem2nodes = split_quadrangle_into_triangle(
+        node_coords, p_elem2nodes, elem2nodes)
+
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    solutions._plot_mesh(p_elem2nodes, elem2nodes, node_coords, color='yellow')
+    matplotlib.pyplot.show()
+    return
+
+
 if __name__ == '__main__':
 
     # run_exercise_a(10)
@@ -508,4 +550,5 @@ if __name__ == '__main__':
     # run_exercise_d()
     # helmholtz_resonator()
     # criteria_functions_testing()
+    test_split()
     print('End.')
