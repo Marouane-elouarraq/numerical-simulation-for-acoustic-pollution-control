@@ -594,7 +594,7 @@ def _set_fractal_2(xmin, xmax, ymin, ymax, nx, ny):
     node_coords = numpy.empty((nnodes-2, spacedim), dtype=numpy.float64)
     nodes_per_elem = 4
     nelems = nx * ny
-    p_elem2nodes = numpy.empty((nelems-nx//2 ,), dtype=numpy.int64)
+    p_elem2nodes = numpy.empty((nelems-nx//2+1 ,), dtype=numpy.int64)
     p_elem2nodes[0] = 0
     for i in range(0, nelems-nx//2-1):
         p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
@@ -645,7 +645,7 @@ def _set_fractal_2(xmin, xmax, ymin, ymax, nx, ny):
     return node_coords, p_elem2nodes, elem2nodes
 
 def _plot_fractal(color='blue'):
-    node_coords, p_elem2nodes, elem2nodes = _set_fractal_2(0.0, 1.0, 0.0, 1.0, 7, 7)
+    node_coords, p_elem2nodes, elem2nodes = _set_fractal_2(0.0, 1.0, 0.0, 1.0, 8, 8)
 
 
     fig = matplotlib.pyplot.figure(1)
