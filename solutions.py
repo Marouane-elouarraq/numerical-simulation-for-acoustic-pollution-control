@@ -112,7 +112,8 @@ def _set_trimesh_boundary(nx, ny):
         myl2gs[2].append(ny * (nx + 1) + i)
     for j in range(0, ny + 1):
         myl2gs[3].append(j * (nx + 1))
-    list_nodes = numpy.unique(numpy.concatenate((myl2gs[0], myl2gs[1], myl2gs[2], myl2gs[3])), )
+    list_nodes = numpy.unique(numpy.concatenate(
+        (myl2gs[0], myl2gs[1], myl2gs[2], myl2gs[3])), )
 
     return list_nodes
 
@@ -123,9 +124,10 @@ def _set_trifem_elementary_stiffness(node_coords, area):
     for i in range(0, 3):
         for j in range(0, 3):
             mat_e[i, j] = (node_coords[(j + 1) % 3, 1] - node_coords[(j + 2) % 3, 1]) * \
-                       (node_coords[(i + 1) % 3, 1] - node_coords[(i + 2) % 3, 1]) + \
-                       (node_coords[(j + 2) % 3, 0] - node_coords[(j + 1) % 3, 0]) * \
-                       (node_coords[(i + 2) % 3, 0] - node_coords[(i + 1) % 3, 0])
+                (node_coords[(i + 1) % 3, 1] - node_coords[(i + 2) % 3, 1]) + \
+                (node_coords[(j + 2) % 3, 0] - node_coords[(j + 1) % 3, 0]) * \
+                (node_coords[(i + 2) % 3, 0] -
+                 node_coords[(i + 1) % 3, 0])
     mat_e *= 0.25 / area
 
     return mat_e
@@ -148,14 +150,9 @@ def _set_trifem_elementary_term(node_coords, area, f=(1.0, 1.0, 1.0)):
     return vec_e
 
 
-
-
-
-
-
 def _set_linefem_elementary_stiffness(node_coords, area):
 
-    mat_e = np.array([[1.0, -1.0],[-1.0, 1.0]], numpy.float64)
+    mat_e = np.array([[1.0, -1.0], [-1.0, 1.0]], numpy.float64)
     mat_e /= area
 
     return mat_e
@@ -163,7 +160,7 @@ def _set_linefem_elementary_stiffness(node_coords, area):
 
 def _set_linefem_elementary_mass(node_coords, area):
 
-    mat_e = np.array([[1.0/3, 1.0/6],[1.0/6, 1.0/3]], numpy.float64)
+    mat_e = np.array([[1.0/3, 1.0/6], [1.0/6, 1.0/3]], numpy.float64)
     mat_e *= area
 
     return mat_e
@@ -172,18 +169,11 @@ def _set_linefem_elementary_mass(node_coords, area):
 def _set_linefem_elementary_term(node_coords, area, f=(1.0, 1.0, 1.0)):
 
     f0 = 2*f[0]+f[1]
-    f1 =   f[0]+2*f[1]
-    vec_e = np.array([f0,f1], dtype=numpy.float)
+    f1 = f[0]+2*f[1]
+    vec_e = np.array([f0, f1], dtype=numpy.float)
     vec_e *= (L/6)
 
     return vec_e
-
-
-
-
-
-
-
 
 
 def _set_trifem_assembly(p_elem2nodes, elem2nodes, node_coords, f_unassembled):
@@ -226,8 +216,8 @@ def _set_dirichlet_condition(nodes, values, mat, vec):
         xp = bp
     '''
     temp = numpy.dot(mat[:, nodes], values[nodes])
-    values = values.reshape(values.size,1)
-    vec[:] = vec[:] - temp.reshape((temp.size,1))
+    values = values.reshape(values.size, 1)
+    vec[:] = vec[:] - temp.reshape((temp.size, 1))
     vec[nodes] = values[nodes]
 
     mat[nodes, :] = 0.0
@@ -242,22 +232,23 @@ def _set_dirichlet_condition(nodes, values, mat, vec):
     return mat, vec
 
 
-
-
 def _plot_node(p_elem2nodes, elem2nodes, node_coords, node, color='red', marker='o'):
 
-    matplotlib.pyplot.plot(node_coords[node, 0], node_coords[node, 1], color=color, marker=marker)
+    matplotlib.pyplot.plot(
+        node_coords[node, 0], node_coords[node, 1], color=color, marker=marker)
 
     return
 
 
 def _plot_elem(p_elem2nodes, elem2nodes, node_coords, elem, color='red'):
 
-    xyz = node_coords[ elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+    xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
     if xyz.shape[0] == 3:
-        matplotlib.pyplot.plot((xyz[0,0], xyz[1,0], xyz[2,0], xyz[0,0]), (xyz[0,1], xyz[1,1], xyz[2,1], xyz[0,1]), color=color)
+        matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]), (
+            xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
     else:
-        matplotlib.pyplot.plot((xyz[0,0], xyz[1,0], xyz[2,0], xyz[3,0], xyz[0,0]), (xyz[0,1], xyz[1,1], xyz[2,1], xyz[3,1], xyz[0,1]), color=color)
+        matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[3, 0], xyz[0, 0]), (
+            xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[3, 1], xyz[0, 1]), color=color)
 
     return
 
@@ -269,7 +260,8 @@ def _plot_mesh(p_elem2nodes, elem2nodes, node_coords, color='blue'):
     nnodes = numpy.shape(node_coords)[0]
     nelems = numpy.shape(p_elem2nodes)[0]
     for elem in range(0, nelems-1):
-        xyz = node_coords[ elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]
+            :p_elem2nodes[elem+1]], :]
         if xyz.shape[0] == 3:
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
@@ -290,7 +282,8 @@ def _plot_trifield(nelemsx, nelemsy, sol):
     Z = numpy.real(sol.reshape((n_max, m_max)))
     fig = matplotlib.pyplot.figure()
     ax = matplotlib.pyplot.subplot(1, 1, 1)
-    matplotlib.pyplot.imshow(Z, extent=[0, 1, 0, 1], vmin=Z.min(), vmax=Z.max(), cmap='jet') # 'RdGy')
+    matplotlib.pyplot.imshow(
+        Z, extent=[0, 1, 0, 1], vmin=Z.min(), vmax=Z.max(), cmap='jet')  # 'RdGy')
     v1 = numpy.linspace(Z.min(), Z.max(), 8, endpoint=True)
     cb = matplotlib.pyplot.colorbar(ticks=v1)
     cb.ax.set_yticklabels(["{:4.2f}".format(i) for i in v1])
@@ -300,7 +293,8 @@ def _plot_trifield(nelemsx, nelemsy, sol):
     Z = numpy.imag(sol.reshape((n_max, m_max)))
     fig = matplotlib.pyplot.figure()
     ax = matplotlib.pyplot.subplot(1, 1, 1)
-    matplotlib.pyplot.imshow(Z, extent=[0, 1, 0, 1], vmin=Z.min(), vmax=Z.max(), cmap='jet') # 'RdGy')
+    matplotlib.pyplot.imshow(
+        Z, extent=[0, 1, 0, 1], vmin=Z.min(), vmax=Z.max(), cmap='jet')  # 'RdGy')
     v1 = numpy.linspace(Z.min(), Z.max(), 8, endpoint=True)
     cb = matplotlib.pyplot.colorbar(ticks=v1)
     cb.ax.set_yticklabels(["{:4.2f}".format(i) for i in v1])
@@ -344,14 +338,16 @@ def _plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, node_data, **k
     x_max = numpy.max(x)
     y_min = numpy.min(y)
     y_max = numpy.max(y)
-    xi, yi = numpy.meshgrid(numpy.linspace(x_min, x_max, 200), numpy.linspace(y_min, y_max, 200))
+    xi, yi = numpy.meshgrid(numpy.linspace(
+        x_min, x_max, 200), numpy.linspace(y_min, y_max, 200))
 
     # creates interpolation
     #    interp_lin = mtri.LinearTriInterpolator(triang, z)
     #    zi_lin = interp_lin(xi, yi)
     #    interp_cubic_geom = mtri.CubicTriInterpolator(triang, z, kind='geom')
     #    zi_cubic_geom = interp_cubic_geom(xi, yi)
-    interp_cubic_min_E = matplotlib.tri.CubicTriInterpolator(triang, z, kind='min_E')
+    interp_cubic_min_E = matplotlib.tri.CubicTriInterpolator(
+        triang, z, kind='min_E')
     zi_cubic_min_E = interp_cubic_min_E(xi, yi)
 
     #    # plot triangulation
@@ -378,7 +374,7 @@ def _plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, node_data, **k
     fig, axs = matplotlib.pyplot.subplots(dpi=dpi)
     axs.axis('equal')
     if True:
-    #try:
+        # try:
         # im = axs.contourf(xi, yi, zi_cubic_min_E,
         #               300,
         #               cmap=matplotlib.pyplot.cm.get_cmap('rainbow', 256)
@@ -390,7 +386,7 @@ def _plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, node_data, **k
         # to fix unique legend
         array_to_visualize = zi_cubic_min_E
         cmap = matplotlib.cm.get_cmap(name='rainbow', lut=256)
-        cmap = matplotlib.cm.get_cmap(name='jet') #, lut=256)
+        cmap = matplotlib.cm.get_cmap(name='jet')  # , lut=256)
 
         if 'limits' in kwargs and kwargs['limits']:
             color_min, color_max = kwargs['limits']
@@ -437,13 +433,16 @@ def _plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, node_data, **k
         # create windows
         x_range = x_max - x_min
         y_range = y_max - y_min
-        matplotlib.pyplot.xlim(x_min - 0.05 * x_range, x_max + 0.05 * x_range)  # 5% more and less
-        matplotlib.pyplot.ylim(y_min - 0.05 * y_range, y_max + 0.05 * y_range)  # 5% more and less
+        matplotlib.pyplot.xlim(x_min - 0.05 * x_range,
+                               x_max + 0.05 * x_range)  # 5% more and less
+        matplotlib.pyplot.ylim(y_min - 0.05 * y_range,
+                               y_max + 0.05 * y_range)  # 5% more and less
 
         if 'filename' in kwargs and kwargs['filename']:
             output_file = kwargs['filename']
             (root, ext) = os.path.splitext(output_file)
-            matplotlib.pyplot.savefig(root + '_contourf' + ext, format=ext[1:])  # , bbox_inches='tight')
+            # , bbox_inches='tight')
+            matplotlib.pyplot.savefig(root + '_contourf' + ext, format=ext[1:])
             matplotlib.pyplot.close()
         else:
             matplotlib.pyplot.show()
@@ -464,8 +463,9 @@ def _plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, node_data, **k
 
 def _plot_trielem(p_elem2nodes, elem2nodes, node_coords, elem):
 
-    xyz = node_coords[ elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
-    matplotlib.pyplot.plot((xyz[0,0], xyz[1,0], xyz[2,0], xyz[0,0]), (xyz[0,1], xyz[1,1], xyz[2,1], xyz[0,1]), color='red')
+    xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+    matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
+                           (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color='red')
 
     return
 
@@ -477,24 +477,28 @@ def _plot_eigvec_fem2d(nelemsx, nelemsy, eig_val, eig_vec, numb_modes, multiplic
     y = numpy.linspace(0, 1, m_max)
     X, Y = numpy.meshgrid(x, y)
 
-    #for m in range(1, m_max):
+    # for m in range(1, m_max):
     #    for n in range(1, n_max):
     for j in range(0, n_max):
         Z = numpy.real(eig_vec[:, j].reshape((n_max, m_max)))
         fig = matplotlib.pyplot.figure()
         ax = matplotlib.pyplot.subplot(1, 1, 1)
-        matplotlib.pyplot.imshow(Z, extent=[0, 1, 0, 1], vmin=Z.min(), vmax=Z.max(), cmap='jet') # 'RdGy')
+        matplotlib.pyplot.imshow(
+            Z, extent=[0, 1, 0, 1], vmin=Z.min(), vmax=Z.max(), cmap='jet')  # 'RdGy')
         v1 = numpy.linspace(Z.min(), Z.max(), 8, endpoint=True)
         cb = matplotlib.pyplot.colorbar(ticks=v1)
         cb.ax.set_yticklabels(["{:4.2f}".format(i) for i in v1])
-        #matplotlib.pyplot.show()
-        filename = 'xxxfig_' + 'FEM2D' + str(multiplicity) + '_eigvec_imshow_' + str(j) + '.jpg'
+        # matplotlib.pyplot.show()
+        filename = 'xxxfig_' + 'FEM2D' + \
+            str(multiplicity) + '_eigvec_imshow_' + str(j) + '.jpg'
         matplotlib.pyplot.savefig(filename)
         matplotlib.pyplot.close()
-        matplotlib.pyplot.contourf(X, Y, Z, 20, alpha=0.9, cmap='jet') # 'RdGy')
+        matplotlib.pyplot.contourf(
+            X, Y, Z, 20, alpha=0.9, cmap='jet')  # 'RdGy')
         matplotlib.pyplot.colorbar()
         # matplotlib.pyplot.show()
-        filename = 'xxxfig_' + 'FEM2D' + str(multiplicity) + '_eigvec_contourf_' + str(j) + '.jpg'
+        filename = 'xxxfig_' + 'FEM2D' + \
+            str(multiplicity) + '_eigvec_contourf_' + str(j) + '.jpg'
         matplotlib.pyplot.savefig(filename)
         matplotlib.pyplot.close()
 
