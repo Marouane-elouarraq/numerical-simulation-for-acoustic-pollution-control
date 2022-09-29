@@ -541,6 +541,71 @@ def test_split():
     # print(new_node_coords, node_coords)
 
 
+def _set_fractal(xmin, xmax, ymin, ymax, nx, ny):
+    
+    spacedim = 3
+    nnodes = (nx + 1) * (ny + 1)
+    node_coords = numpy.empty((nnodes, spacedim), dtype=numpy.float64)
+    nodes_per_elem = 4
+    nelems = nx * ny
+    p_elem2nodes = numpy.empty((nelems + 1,), dtype=numpy.int64)
+    p_elem2nodes[0] = 0
+    for i in range(0, nelems):
+        p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
+    elem2nodes = numpy.empty((nelems * nodes_per_elem,), dtype=numpy.int64)
+
+    # elements
+    k = 0
+    for j in range(0, ny):
+        for i in range(0, nx):
+            elem2nodes[k + 0] = j * (nx + 1) + i
+            elem2nodes[k + 1] = j * (nx + 1) + i + 1
+            elem2nodes[k + 2] = (j + 1) * (nx + 1) + i + 1
+            elem2nodes[k + 3] = (j + 1) * (nx + 1) + i
+            k += nodes_per_elem
+    # elem_type = numpy.empty((nelems,), dtype=numpy.int64)
+    # elem_type[:] = VTK_TRIANGLE
+
+    # coordinates of (nx+1)*(ny+1) nodes of cartesian grid
+    k = 0
+    for j in range(0, ny + 1):
+        yy = ymin + (j * (ymax - ymin) / ny)
+        for i in range(0, nx + 1):
+            xx = xmin + (i * (xmax - xmin) / nx)
+            node_coords[k, :] = xx, yy, 0.0
+            k += 1
+# little edit, just checking
+    node_coords = numpy.delete(node_coords, [i for i in range(0, nx+1) if i!=2 and i!=1], axis = 0)
+    elem2nodes = elem2nodes[:nelems*nodes_per_elem-nx*nodes_per_elem-1]
+    p_elem2nodes = p_elem2nodes[:nelems+1-nx]
+    # node_coords[0] = [0.1, 0.0,  0.0 ]
+    # print(node_coords)
+
+    # local to global numbering
+    node_l2g = numpy.arange(0, nnodes, 1, dtype=numpy.int64)
+
+    return node_coords, node_l2g, p_elem2nodes, elem2nodes
+
+def _plot_fractal(color='blue'):
+    node_coords, node_l2g, p_elem2nodes, elem2nodes = _set_fractal(0.0, 1.0, 0.0, 1.0, 10, 10)
+
+
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    nnodes = numpy.shape(node_coords)[0]
+    nelems = numpy.shape(p_elem2nodes)[0]
+    for elem in range(0, nelems-1):
+        xyz = node_coords[ elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+        if xyz.shape[0] == 3:
+            matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
+                                   (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
+        else:
+            matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[3, 0], xyz[0, 0]),
+                                   (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[3, 1], xyz[0, 1]), color=color)
+
+    matplotlib.pyplot.show()
+    return
+
 if __name__ == '__main__':
 
     # run_exercise_a(10)
@@ -550,5 +615,6 @@ if __name__ == '__main__':
     # helmholtz_resonator()
     # criteria_functions_testing()
     # shuffled_quadrangle_grid()
-    test_split()
+    # test_split()
+    _plot_fractal()
     print('End.')
