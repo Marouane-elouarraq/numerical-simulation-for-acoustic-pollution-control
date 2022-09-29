@@ -586,8 +586,66 @@ def _set_fractal(xmin, xmax, ymin, ymax, nx, ny):
 
     return node_coords, node_l2g, p_elem2nodes, elem2nodes
 
+
+def _set_fractal_2(xmin, xmax, ymin, ymax, nx, ny):
+    
+    spacedim = 3
+    nnodes = (nx + 1) * (ny + 1)
+    node_coords = numpy.empty((nnodes-2, spacedim), dtype=numpy.float64)
+    nodes_per_elem = 4
+    nelems = nx * ny
+    p_elem2nodes = numpy.empty((nelems-nx//2 ,), dtype=numpy.int64)
+    p_elem2nodes[0] = 0
+    for i in range(0, nelems-nx//2-1):
+        p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
+    elem2nodes = numpy.empty(((nelems-nx//2) * nodes_per_elem,), dtype=numpy.int64)
+
+    # elements
+    k = 0
+    for j in range(0, ny):
+        if j == 0:
+            for i in range(0, nx):
+                if 2*i+1 < nx:
+                    elem2nodes[k + 0] = 2*i
+                    elem2nodes[k + 1] = 2*i + 1
+                    elem2nodes[k + 2] = nx + 1 + 2*i
+                    elem2nodes[k + 3] = nx + 2*i
+                    k += nodes_per_elem
+                    # print(k)
+        else:
+            last_i = (nx-1)//2 - 1
+            for i in range(0, nx):
+                elem2nodes[k + 0] = j * (nx + 1) + i - last_i
+                elem2nodes[k + 1] = j * (nx + 1) + i - last_i + 1
+                elem2nodes[k + 2] = (j + 1) * (nx + 1) + i - last_i + 1
+                elem2nodes[k + 3] = (j + 1) * (nx + 1) + i - last_i
+                k += nodes_per_elem
+                # print(k)
+    # elem_type = numpy.empty((nelems,), dtype=numpy.int64)
+    # elem_type[:] = VTK_TRIANGLE
+
+    # coordinates of (nx+1)*(ny+1) nodes of cartesian grid
+    k = 0
+    for j in range(0, ny + 1):
+        yy = ymin + (j * (ymax - ymin) / ny)
+        if j == 0:
+            for i in range(1, nx):
+                xx = xmin + (i * (xmax - xmin) / nx)
+                node_coords[k, :] = xx, yy, 0.0
+                k += 1
+        else:
+            for i in range(0, nx + 1):
+                xx = xmin + (i * (xmax - xmin) / nx)
+                node_coords[k, :] = xx, yy, 0.0
+                k += 1
+
+    # local to global numbering
+    # node_l2g = numpy.arange(0, nnodes, 1, dtype=numpy.int64)
+
+    return node_coords, p_elem2nodes, elem2nodes
+
 def _plot_fractal(color='blue'):
-    node_coords, node_l2g, p_elem2nodes, elem2nodes = _set_fractal(0.0, 1.0, 0.0, 1.0, 10, 10)
+    node_coords, p_elem2nodes, elem2nodes = _set_fractal_2(0.0, 1.0, 0.0, 1.0, 7, 7)
 
 
     fig = matplotlib.pyplot.figure(1)
