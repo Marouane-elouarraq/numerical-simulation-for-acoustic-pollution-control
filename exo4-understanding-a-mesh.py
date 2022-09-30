@@ -730,7 +730,8 @@ def fractalize_mat_order(mat):
     new_mat = quadruple_mat(new_mat)
 
     for t in isolated_ones:
-        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *
+                                                                t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample
 
     # idx_list = []
     # m = new_mat.shape[0]
@@ -751,6 +752,36 @@ def fractalize_mat_order(mat):
     return
 
     # for _ in range(order):
+
+
+def fractalize_mat_order(mat):
+    n = mat.shape[0]
+    fractalized_mat_sample = fractalize_mat(mat_test)
+    fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+    isolated_ones = []
+    for i in range(n+2):
+        for j in range(n+2):
+            if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+            if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+    new_mat = fractalize_mat(mat_test)
+    new_mat = pagging(new_mat)
+    new_mat = quadruple_mat(new_mat)
+
+    for t in isolated_ones:
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *
+                                                                t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample
+
+    p = new_mat.shape[0]
+    for i in range(p):
+        for j in range(p):
+            if new_mat[i][j] >= 2:
+                new_mat[i][j] = 1
+    # return new_mat
+    matplotlib.pyplot.matshow(new_mat)
+    matplotlib.pyplot.show()
+    return
 
 
 def mat_to_mesh(mat):
