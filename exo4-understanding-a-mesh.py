@@ -7,12 +7,14 @@ the programming methodology have been given during the lectures.
 
 # Python packages
 from platform import node
+from re import I
 import matplotlib.pyplot
 import matplotlib.pylab
 from mpl_toolkits.mplot3d import Axes3D
 import numpy
 import random
 import os
+from pyparsing import java_style_comment
 import scipy.io
 import scipy.linalg
 import scipy.sparse
@@ -454,11 +456,14 @@ def helmholtz_resonator(xmin=0.0, xmax=2.0, ymin=0.0, ymax=1.0):
     nelems = nelemsx * nelemsy
     nnodes = (nelemsx + 1) * (nelemsy + 1)
 
-    node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_quadmesh(xmin, xmax, ymin, ymax, nelemsx, nelemsy)
+    node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_quadmesh(
+        xmin, xmax, ymin, ymax, nelemsx, nelemsy)
 
     # shape the resonator
-    node_coords, p_elem2nodes, elem2nodes = remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, 30)
-    node_coords, p_elem2nodes, elem2nodes = remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, 161)
+    node_coords, p_elem2nodes, elem2nodes = remove_elem_to_mesh(
+        node_coords, p_elem2nodes, elem2nodes, 30)
+    node_coords, p_elem2nodes, elem2nodes = remove_elem_to_mesh(
+        node_coords, p_elem2nodes, elem2nodes, 161)
     # -- plot mesh
     fig = matplotlib.pyplot.figure(1)
     ax = matplotlib.pyplot.subplot(1, 1, 1)
@@ -467,6 +472,8 @@ def helmholtz_resonator(xmin=0.0, xmax=2.0, ymin=0.0, ymax=1.0):
     solutions._plot_mesh(p_elem2nodes, elem2nodes, node_coords, color='yellow')
     matplotlib.pyplot.show()
     return
+
+
 def geometrical_loc(nx, ny, xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0):
     spacedim = 3
     nnodes = (nx + 1) * (ny + 1)
@@ -480,7 +487,8 @@ def geometrical_loc(nx, ny, xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0):
     elem2nodes = numpy.empty((nelems * nodes_per_elem,), dtype=numpy.int64)
 
     # elements
-    node_to_dodge = [(nx//2, ny//2), (nx//2-1, ny//2-1), (nx//2-1, ny//2), (nx//2, ny//2-1)]
+    node_to_dodge = [(nx//2, ny//2), (nx//2-1, ny//2-1),
+                     (nx//2-1, ny//2), (nx//2, ny//2-1)]
     k = 0
     for j in range(0, ny):
         for i in range(0, nx):
@@ -504,7 +512,7 @@ def geometrical_loc(nx, ny, xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0):
             xx = xmin + (i * (xmax - xmin) / nx)
             node_coords[k, :] = xx, yy, 0.0
             k += 1
-    
+
     fig = matplotlib.pyplot.figure(1)
     ax = matplotlib.pyplot.subplot(1, 1, 1)
     ax.set_aspect('equal')
@@ -703,8 +711,7 @@ def _plot_fractal(color='blue'):
     nnodes = numpy.shape(node_coords)[0]
     nelems = numpy.shape(p_elem2nodes)[0]
     for elem in range(0, nelems-1):
-        xyz = node_coords[elem2nodes[p_elem2nodes[elem]
-            :p_elem2nodes[elem+1]], :]
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
         if xyz.shape[0] == 3:
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
@@ -756,6 +763,13 @@ def pagging(mat):
     new_mat = numpy.zeros((n+2, n+2), int)
     for i in range(1, n+1):
         new_mat[i][1:n+1] = mat[i-1][0:n]
+    return new_mat
+
+
+def pagged_mat(mat):
+    n = mat.shape[0]
+    new_mat = numpy.zeros((n+2, n+2), int)
+    new_mat[1:n+1, 1:n+1] = mat
     return new_mat
 
 
@@ -882,7 +896,7 @@ def fractalize_mat_order_rec(order):
     new_mat = quadruple_mat(new_mat)
 
     for t in isolated_ones:
-        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 * t[0] -
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4*t[0] -
                                                                 1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample_global
 
     p = new_mat.shape[0]
@@ -1028,8 +1042,7 @@ def plot_mat_to_mesh(mat, xmin, xmax, ymin, ymax, color='blue'):
     nnodes = numpy.shape(node_coords)[0]
     nelems = numpy.shape(p_elem2nodes)[0]
     for elem in range(0, nelems-1):
-        xyz = node_coords[elem2nodes[p_elem2nodes[elem]
-            :p_elem2nodes[elem+1]], :]
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
         if xyz.shape[0] == 3:
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
@@ -1065,7 +1078,21 @@ mat_test_3 = numpy.array([[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1
 # ----------------------------------------------------------------------------
 
 
-def build_fractal(mat, xmin, xmax, ymin, ymax):
+def mat_res_helmholtz():
+    nx, ny = 20, 20
+    M = numpy.ones(18)
+    M = pagged_mat(M)
+    for i in range(1, 9):
+        for j in range(9, 11):
+            M[i, j] = 0
+    for i in range(11, 20):
+        for j in range(9, 11):
+            M[i, j] = 0
+
+    return M
+
+
+def build_matrix(mat, xmin, xmax, ymin, ymax):
     spacedim = 3
     nx, ny = mat.shape[1], mat.shape[0]
     nnodes = (nx + 1) * (ny + 1)
@@ -1107,8 +1134,33 @@ def build_fractal(mat, xmin, xmax, ymin, ymax):
     return node_coords, p_elem2nodes, elem2nodes
 
 
+def res_helmholtz():
+    node_coords, p_elem2nodes, elem2nodes = build_matrix(
+        mat_res_helmholtz(), 0.0, 1.0, 0.0, 1.0)
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    solutions._plot_mesh(p_elem2nodes, elem2nodes, node_coords, color='yellow')
+    matplotlib.pyplot.show()
+    return
+
+
+def detect_boundary_mat(mat):
+    node_to_dodge = []
+    ny, nx = mat.shape[0], mat.shape[1]
+    for i in range(ny):
+        for j in range(nx):
+            ii = ny-1-i
+            jj = j
+            if mat[ii, jj] == 1:
+                if (jj-1 >= 0 and ii+1 < ny and mat[ii+1, jj-1] == 0) or (0 <= jj-1 and mat[ii, jj-1] == 0) or (0 <= jj-1 and 0 <= ii-1 and mat[ii-1, jj-1] == 0) or (0 <= ii-1 and mat[ii-1, jj] == 0) or (0 <= ii-1 and jj+1 < nx and mat[ii-1, jj+1] == 0) or (jj+1 < nx and mat[ii, jj+1] == 0) or (ii+1 < ny and jj+1 < nx and mat[ii+1, jj+1] == 0) or (ii+1 < ny and mat[ii+1, jj] == 0):
+                    node_to_dodge.append(j*(nx+1)+i)
+    return node_to_dodge
+
+
 def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
-    node_coords, p_elem2nodes, elem2nodes = build_fractal(
+    node_coords, p_elem2nodes, elem2nodes = build_matrix(
         mat, xmin, xmax, ymin, ymax)
 
     fig = matplotlib.pyplot.figure(1)
@@ -1116,8 +1168,7 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     nnodes = numpy.shape(node_coords)[0]
     nelems = numpy.shape(p_elem2nodes)[0]
     for elem in range(0, nelems-1):
-        xyz = node_coords[elem2nodes[p_elem2nodes[elem]
-            :p_elem2nodes[elem+1]], :]
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
         if xyz.shape[0] == 3:
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
@@ -1149,5 +1200,7 @@ if __name__ == '__main__':
     # fractalize_mat_order_bis(fractalize_mat_order(mat_test))
     # check_fractalize_mat_order_rec(3)
     # draw_fractal(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
-    geometrical_loc(10, 10)
+    # geometrical_loc(20, 20)
+    # res_helmholtz()
+    print(detect_boundary_mat(fractalize_mat_order_rec(2)))
     print('End.')

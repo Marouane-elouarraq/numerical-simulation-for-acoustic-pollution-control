@@ -6,6 +6,7 @@ the programming methodology have been given during the lectures.
 
 
 # Python packages
+
 import matplotlib.pyplot
 import matplotlib.pylab
 from mpl_toolkits.mplot3d import Axes3D
@@ -78,6 +79,143 @@ def shuffle(node_coords, p_elem2nodes, elem2nodes, xmin=0.0, xmax=1.0, ymin=0.0,
         node_coords[i, :] = numpy.array([x+c1, y+c2, z])
     return node_coords, p_elem2nodes, elem2nodes
 
+def pagged_mat(mat):
+    n = mat.shape[0]
+    new_mat = numpy.zeros((n+2, n+2), int)
+    new_mat[1:n+1 , 1:n+1] = mat
+    return new_mat
+
+def mat_res_helmholtz():
+    nx, ny = 20, 20
+    M = numpy.ones(18)
+    M = pagged_mat(M)
+    for i in range(1, 9):
+        for j in range(9, 11):
+            M[i, j] = 0
+    for i in range(11, 20):
+        for j in range(9, 11):
+            M[i, j] = 0
+
+    return M
+
+def detect_boundary_mat(mat):
+    node_to_dodge = []
+    ny, nx = mat.shape[0], mat.shape[1]
+    for i in range(ny):
+        for j in range(nx):
+            ii = ny-1-i
+            jj = j
+            if mat[ii, jj] == 1:
+                if (jj-1>=0 and ii+1<ny and mat[ii+1, jj-1]==0) or (0<=jj-1 and mat[ii, jj-1]==0) or (0<=jj-1 and 0<=ii-1 and mat[ii-1, jj-1]==0) or (0<=ii-1 and mat[ii-1, jj]==0) or (0<=ii-1 and jj+1<nx and mat[ii-1, jj+1] == 0) or (jj+1<nx and mat[ii, jj+1]==0) or (ii+1<ny and jj+1<nx and mat[ii+1, jj+1]==0) or (ii+1<ny and mat[ii+1, jj]==0):
+                    node_to_dodge.append(j*(nx+1)+i)
+    return node_to_dodge
+
+def build_matrix(mat, xmin, xmax, ymin, ymax):
+    spacedim = 3
+    nx, ny = mat.shape[1], mat.shape[0]
+    nnodes = (nx + 1) * (ny + 1)
+    node_coords = numpy.empty((nnodes, spacedim), dtype=numpy.float64)
+    nodes_per_elem = 4
+    nelems = mat.sum()
+    p_elem2nodes = numpy.empty((nelems + 1,), dtype=numpy.int64)
+    p_elem2nodes[0] = 0
+    for i in range(0, nelems):
+        p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
+    elem2nodes = numpy.empty((nelems * nodes_per_elem,), dtype=numpy.int64)
+
+    # elements
+    k = 0
+    for j in range(0, ny):
+        for i in range(0, nx):
+            if mat[i][j] == 1:
+                elem2nodes[k + 0] = j * (nx + 1) + i
+                elem2nodes[k + 1] = j * (nx + 1) + i + 1
+                elem2nodes[k + 2] = (j + 1) * (nx + 1) + i + 1
+                elem2nodes[k + 3] = (j + 1) * (nx + 1) + i
+                k += nodes_per_elem
+
+    # elem_type = numpy.empty((nelems,), dtype=numpy.int64)
+    # elem_type[:] = VTK_TRIANGLE
+
+    # coordinates of (nx+1)*(ny+1) nodes of cartesian grid
+    r = 0
+    for j in range(0, ny+1):
+        yy = ymin + (j * (ymax - ymin) / ny)
+        for i in range(0, nx+1):
+            xx = xmin + (i * (xmax - xmin) / nx)
+            node_coords[r, :] = xx, yy, 0.0
+            r += 1
+
+    # local to global numbering
+    # node_l2g = numpy.arange(0, nnodes, 1, dtype=numpy.int64)
+
+    return node_coords, p_elem2nodes, elem2nodes
+
+def fractalize_mat(mat):
+    # always matrix = mat_test
+    mat[0][2] = 1
+    mat[1][3] = 0
+
+    mat[3][0] = 1
+    mat[2][1] = 0
+
+    mat[5][3] = 1
+    mat[4][2] = 0
+
+    mat[2][5] = 1
+    mat[3][4] = 0
+
+    return mat
+
+mat_test = numpy.array([[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0]])  
+fractalized_mat_sample_global = fractalize_mat(mat_test)
+
+def quadruple_mat(mat):
+    n = mat.shape[0]
+    new_mat = numpy.zeros((4*n, 4*n), int)
+    for i in range(0, n):
+        for j in range(0, n):
+            if mat[i][j] == 1:
+                for x in range(4):
+                    for y in range(4):
+                        new_mat[4*i+x][4*j+y] = 1
+    return new_mat
+
+def pagging(mat):
+    n = mat.shape[0]
+    new_mat = numpy.zeros((n+2, n+2), int)
+    for i in range(1, n+1):
+        new_mat[i][1:n+1] = mat[i-1][0:n]
+    return new_mat
+
+def fractalize_mat_order_rec(order):
+    if order == 1:
+        return fractalized_mat_sample_global
+
+    fractalized_mat_sample = fractalize_mat_order_rec(order-1)
+    n = fractalized_mat_sample.shape[0]
+    fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+    isolated_ones = []
+    for i in range(n+2):
+        for j in range(n+2):
+            if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+            if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+    new_mat = fractalized_mat_sample
+    new_mat = pagging(new_mat)
+    new_mat = quadruple_mat(new_mat)
+
+    for t in isolated_ones:
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4*t[0] -
+                                                                1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample_global
+
+    p = new_mat.shape[0]
+    for i in range(p):
+        for j in range(p):
+            if new_mat[i][j] >= 2:
+                new_mat[i][j] = 1
+    return new_mat
 
 # ..todo: Uncomment for displaying limited digits
 # numpy.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
@@ -189,43 +327,41 @@ def run_exercise_solution_helmholtz_dddd():
     return
 
 
-def geometrical_loc_sol():
+def geometrical_loc_sol(mat):
     # -- set equation parameters
-    wavenumber = numpy.pi
+    wavenumber = numpy.pi*0.5
     # -- set geometry parameters
     xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
-    nelemsx, nelemsy = 10, 10
+    nelemsx, nelemsy = mat.shape[1], mat.shape[0]
 
     # -- generate mesh
     nnodes = (nelemsx + 1) * (nelemsy + 1)
     nelems = nelemsx * nelemsy * 2
-    # node_coords, p_elem2nodes, elem2nodes = geometrical_loc(nelemsx, nelemsy)
-    node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_square_trimesh(
-        xmin, xmax, ymin, ymax, nelemsx, nelemsy)
+    node_coords, p_elem2nodes, elem2nodes, node_l2g = solutions._set_square_trimesh(xmin, xmax, ymin, ymax, nelemsx, nelemsy)
     # .. todo:: Modify the line below to define a different geometry.
     # p_elem2nodes, elem2nodes, node_coords, node_l2g = ...
     nnodes = node_coords.shape[0]
     nelems = len(p_elem2nodes)-1
 
     # -- plot mesh
+    new_node_coords, new_p_elem2nodes, new_elem2nodes = build_matrix(mat, xmin, xmax, ymin, ymax)
     fig = matplotlib.pyplot.figure(1)
     ax = matplotlib.pyplot.subplot(1, 1, 1)
     ax.set_aspect('equal')
     ax.axis('off')
-    solutions._plot_mesh(p_elem2nodes, elem2nodes, node_coords, color='orange')
+    solutions._plot_mesh(new_p_elem2nodes, new_elem2nodes, new_node_coords, color='orange')
     matplotlib.pyplot.show()
 
     # -- set boundary geometry
     # boundary composed of nodes
     # .. todo:: Modify the lines below to select the ids of the nodes on the boundary of the different geometry.
-    nodes_on_north = solutions._set_square_nodes_boundary_north(node_coords)
-    nodes_on_south = solutions._set_square_nodes_boundary_south(node_coords)
-    nodes_on_east = solutions._set_square_nodes_boundary_east(node_coords)
-    nodes_on_west = solutions._set_square_nodes_boundary_west(node_coords)
-    # another list in this case should be added:
-    # extra_nodes = [48, 49, 50, 59, 61, 70, 71, 72]
-    nodes_on_boundary = numpy.unique(numpy.concatenate(
-        (nodes_on_north, nodes_on_south, nodes_on_east, nodes_on_west)), )
+    # nodes_on_north = solutions._set_square_nodes_boundary_north(node_coords)
+    # nodes_on_south = solutions._set_square_nodes_boundary_south(node_coords)
+    # nodes_on_east = solutions._set_square_nodes_boundary_east(node_coords)
+    # nodes_on_west = solutions._set_square_nodes_boundary_west(node_coords)
+    node_to_dodge = detect_boundary_mat(mat)
+    # in this case we should add some extra nodes
+    nodes_on_boundary = numpy.unique(numpy.array(node_to_dodge), )
     # ..warning: the ids of the nodes on the boundary should be 'global' number.
     # nodes_on_boundary = ...
 
@@ -242,8 +378,7 @@ def geometrical_loc_sol():
     # ..warning: end
 
     # -- set dirichlet boundary conditions
-    values_at_nodes_on_boundary = numpy.zeros(
-        (nnodes, 1), dtype=numpy.complex128)
+    values_at_nodes_on_boundary = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
     values_at_nodes_on_boundary[nodes_on_boundary] = solexact[nodes_on_boundary]
 
     # -- set finite element matrices and right hand side
@@ -272,26 +407,22 @@ def geometrical_loc_sol():
 
     # -- plot finite element solution
     solreal = sol.reshape((sol.shape[0], ))
-    # _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solreal))
-    # _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solreal))
+    _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solreal))
+    _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solreal))
     #
     # ..warning: for teaching purpose only
     # -- plot exact solution
     solexactreal = solexact.reshape((solexact.shape[0], ))
-    _ = solutions._plot_contourf(
-        nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solexactreal))
-    _ = solutions._plot_contourf(
-        nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solexactreal))
+    # _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solexactreal))
+    # _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solexactreal))
     # # ..warning: end
 
     # ..warning: for teaching purpose only
     # -- plot exact solution - approximate solution
     solerr = solreal - solexactreal
     norm_err = numpy.linalg.norm(solerr)
-    _ = solutions._plot_contourf(
-        nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solerr))
-    _ = solutions._plot_contourf(
-        nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solerr))
+    _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solerr))
+    _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solerr))
     # # ..warning: end
 
     return
@@ -768,7 +899,8 @@ def find_alpha_3(choice):
 if __name__ == '__main__':
 
     # run_exercise_solution_helmholtz_dddd()
-    geometrical_loc_sol()
+    # geometrical_loc_sol(fractalize_mat_order_rec(2))
+    geometrical_loc_sol(mat_res_helmholtz())
     # find_alpha()
     # find_beta()
     # find_alpha_2()
