@@ -690,6 +690,7 @@ mat_test = numpy.array([[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 
                        0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0]])
 
 
+
 def fractalize_mat(mat):
     # always matrix = mat_test
     mat[0][2] = 1
@@ -731,8 +732,7 @@ def fractalize_mat_order(mat):
     new_mat = quadruple_mat(new_mat)
 
     for t in isolated_ones:
-        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *
-                                                                t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample
 
     # idx_list = []
     # m = new_mat.shape[0]
@@ -747,42 +747,107 @@ def fractalize_mat_order(mat):
         for j in range(p):
             if new_mat[i][j] >= 2:
                 new_mat[i][j] = 1
+    return new_mat
+    # matplotlib.pyplot.matshow(new_mat)
+    # matplotlib.pyplot.show()
+    # return
+
+    # for _ in range(order):
+
+
+def fractalize_mat_order(mat):
+    n = mat.shape[0]
+    fractalized_mat_sample = fractalize_mat(mat_test)
+    fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+    isolated_ones = []
+    for i in range(n+2):
+        for j in range(n+2):
+            if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+            if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+    new_mat = fractalize_mat(mat_test)
+    new_mat = pagging(new_mat)
+    new_mat = quadruple_mat(new_mat)
+
+    for t in isolated_ones:
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample
+
+    p = new_mat.shape[0]
+    for i in range(p):
+        for j in range(p):
+            if new_mat[i][j] >= 2:
+                new_mat[i][j] = 1
+    return new_mat
+    # matplotlib.pyplot.matshow(new_mat)
+    # matplotlib.pyplot.show()
+    # return
+
+fractalized_mat_sample_global = fractalize_mat(mat_test)
+def fractalize_mat_order_bis(mat):
+    
+    fractalized_mat_sample = fractalize_mat_order(mat_test)
+    n = fractalized_mat_sample.shape[0]
+    fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+    isolated_ones = []
+    for i in range(n+2):
+        for j in range(n+2):
+            if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+            if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+    new_mat = fractalize_mat_order(mat_test)
+    new_mat = pagging(new_mat)
+    new_mat = quadruple_mat(new_mat)
+
+    for t in isolated_ones:
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample_global
+
+    p = new_mat.shape[0]
+    for i in range(p):
+        for j in range(p):
+            if new_mat[i][j] >= 2:
+                new_mat[i][j] = 1
     # return new_mat
     matplotlib.pyplot.matshow(new_mat)
     matplotlib.pyplot.show()
     return
 
-    # for _ in range(order):
+def fractalize_mat_order_rec(order):
+    if order == 1:
+        return fractalized_mat_sample_global
+    
+    fractalized_mat_sample = fractalize_mat_order_rec(order-1)
+    n = fractalized_mat_sample.shape[0]
+    fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+    isolated_ones = []
+    for i in range(n+2):
+        for j in range(n+2):
+            if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+            if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+    new_mat = fractalized_mat_sample
+    new_mat = pagging(new_mat)
+    new_mat = quadruple_mat(new_mat)
 
+    for t in isolated_ones:
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample_global
 
-# def fractalize_mat_order(mat):
-#     n = mat.shape[0]
-#     fractalized_mat_sample = fractalize_mat(mat_test)
-#     fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
-#     isolated_ones = []
-#     for i in range(n+2):
-#         for j in range(n+2):
-#             if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
-#                 isolated_ones.append((i, j))
-#             if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
-#                 isolated_ones.append((i, j))
-#     new_mat = fractalize_mat(mat_test)
-#     new_mat = pagging(new_mat)
-#     new_mat = quadruple_mat(new_mat)
+    p = new_mat.shape[0]
+    for i in range(p):
+        for j in range(p):
+            if new_mat[i][j] >= 2:
+                new_mat[i][j] = 1
+    return new_mat
+def check_fractalize_mat_order_rec(order):
+    mat = fractalize_mat_order_rec(order)
+    matplotlib.pyplot.matshow(mat)
+    matplotlib.pyplot.show()
+    return
+    
 
-#     for t in isolated_ones:
-#         new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *
-#                                                                 t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample
-
-#     p = new_mat.shape[0]
-#     for i in range(p):
-#         for j in range(p):
-#             if new_mat[i][j] >= 2:
-#                 new_mat[i][j] = 1
-#     # return new_mat
-#     matplotlib.pyplot.matshow(new_mat)
-#     matplotlib.pyplot.show()
-#     return
+# fractal_mat_test = fractalize_mat_order(mat_test)
 
 def ecart_node(mat, ii, jj, nx, ny):
     k = 1
@@ -940,12 +1005,13 @@ mat_test_2 = numpy.array([[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1
                          0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 0, 1, 0, 0, 0]])
 mat_test_3 = numpy.array([[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [
                          1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 0, 1, 0, 0, 0]])
-fractalized_mat_sample = fractalize_mat(mat_test)
+
 # ----------------------------------------------------------------------------
 
 
-def build_fractal(mat, xmin, xmax, ymin, ymax, nx, ny):
+def build_fractal(mat, xmin, xmax, ymin, ymax):
     spacedim = 3
+    nx, ny = mat.shape[1], mat.shape[0]
     nnodes = (nx + 1) * (ny + 1)
     node_coords = numpy.empty((nnodes, spacedim), dtype=numpy.float64)
     nodes_per_elem = 4
@@ -972,23 +1038,22 @@ def build_fractal(mat, xmin, xmax, ymin, ymax, nx, ny):
 
     # coordinates of (nx+1)*(ny+1) nodes of cartesian grid
     r = 0
-    for j in range(0, ny):
+    for j in range(0, ny+1):
         yy = ymin + (j * (ymax - ymin) / ny)
-        for i in range(0, nx):
+        for i in range(0, nx+1):
             xx = xmin + (i * (xmax - xmin) / nx)
             node_coords[r, :] = xx, yy, 0.0
             r += 1
-            print(r)
+            
 
     # local to global numbering
     # node_l2g = numpy.arange(0, nnodes, 1, dtype=numpy.int64)
 
-    print(node_coords)
+    return node_coords, p_elem2nodes, elem2nodes
 
 
-def draw_fractal(mat, xmin, xmax, ymin, ymax, nx, ny, color='blue'):
-    node_coords, p_elem2nodes, elem2nodes = build_fractal(
-        mat, xmin, xmax, ymin, ymax, nx, ny)
+def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
+    node_coords, p_elem2nodes, elem2nodes = build_fractal(mat, xmin, xmax, ymin, ymax)
 
     fig = matplotlib.pyplot.figure(1)
     ax = matplotlib.pyplot.subplot(1, 1, 1)
@@ -1022,6 +1087,9 @@ if __name__ == '__main__':
     # fractalize_mat(mat_test)
     # fractalize_mat_order(mat_test)
     # mat_to_mesh(mat_test_2, 0.0, 6.0, 0.0, 6.0)
-    # print(fractalized_mat_sample)
-    build_fractal(fractalized_mat_sample, 0.0, 1.0, 0.0, 1.0, 6, 6)
+    # print(fractalized_mat_sample_global)
+    # draw_fractal(fractalize_mat_order(mat_test), 0.0, 1.0, 0.0, 1.0)
+    # fractalize_mat_order_bis(fractalize_mat_order(mat_test))
+    # check_fractalize_mat_order_rec(3)
+    draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
     print('End.')
