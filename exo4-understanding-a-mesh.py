@@ -6,6 +6,7 @@ the programming methodology have been given during the lectures.
 
 
 # Python packages
+from platform import node
 import matplotlib.pyplot
 import matplotlib.pylab
 from mpl_toolkits.mplot3d import Axes3D
@@ -754,42 +755,258 @@ def fractalize_mat_order(mat):
     # for _ in range(order):
 
 
-def fractalize_mat_order(mat):
+# def fractalize_mat_order(mat):
+#     n = mat.shape[0]
+#     fractalized_mat_sample = fractalize_mat(mat_test)
+#     fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+#     isolated_ones = []
+#     for i in range(n+2):
+#         for j in range(n+2):
+#             if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+#                 isolated_ones.append((i, j))
+#             if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+#                 isolated_ones.append((i, j))
+#     new_mat = fractalize_mat(mat_test)
+#     new_mat = pagging(new_mat)
+#     new_mat = quadruple_mat(new_mat)
+
+#     for t in isolated_ones:
+#         new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *
+#                                                                 t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample
+
+#     p = new_mat.shape[0]
+#     for i in range(p):
+#         for j in range(p):
+#             if new_mat[i][j] >= 2:
+#                 new_mat[i][j] = 1
+#     # return new_mat
+#     matplotlib.pyplot.matshow(new_mat)
+#     matplotlib.pyplot.show()
+#     return
+
+def ecart_node(mat, ii, jj, nx, ny):
+    k = 1
+    while jj+k < nx:
+        if mat[ii][jj+k] == 0:
+            break
+        k += 1
+    s = 0
+    if ii+1 < ny:
+        while s < nx:
+            if mat[ii+1][s] == 0:
+                break
+            s += 1
+    return s+1+nx-(jj+k)
+
+
+def remove_duplicate(mat):
     n = mat.shape[0]
-    fractalized_mat_sample = fractalize_mat(mat_test)
-    fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
-    isolated_ones = []
-    for i in range(n+2):
-        for j in range(n+2):
-            if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
-                isolated_ones.append((i, j))
-            if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
-                isolated_ones.append((i, j))
-    new_mat = fractalize_mat(mat_test)
-    new_mat = pagging(new_mat)
-    new_mat = quadruple_mat(new_mat)
+    idx_to_remove = []
+    for i in range(n-1):
+        if list(mat[i, :]) == list(mat[i+1, :]):
+            idx_to_remove.append(i)
+    mat = numpy.delete(mat, idx_to_remove, axis=0)
+    return mat
 
-    for t in isolated_ones:
-        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *
-                                                                t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample
+# test_array = numpy.array([[2., 0., 0.],[3., 0., 0.],[1., 1., 0.],[2., 1., 0.],[2., 1., 0.],[3., 1., 0.],[3., 1., 0.],[4., 1., 0.],[4., 1., 0.],[5., 1., 0.]])
 
-    p = new_mat.shape[0]
-    for i in range(p):
-        for j in range(p):
-            if new_mat[i][j] >= 2:
-                new_mat[i][j] = 1
-    # return new_mat
-    matplotlib.pyplot.matshow(new_mat)
+
+def add_one_line_of_zeros(mat):
+    mat_copy = mat.copy()
+    n = mat.shape[0]
+    new_mat = numpy.concatenate(
+        (numpy.array([[0 for _ in range(n)]]), mat_copy), axis=0)
+    return new_mat
+
+
+def mat_to_mesh(mat, xmin, xmax, ymin, ymax):
+    nx, ny = mat.shape[1], mat.shape[0]
+    nnodes = (nx+1)*(ny+1)
+    node_coords = numpy.array([[0.0, 0.0, 0.0]])
+    nodes_per_elem = 4
+    nelems = nx*ny
+    # p_elem2nodes = numpy.empty((nelems + 1,), dtype=numpy.int64)
+    # p_elem2nodes[0] = 0
+    # for i in range(0, nelems):
+    #     p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
+    # elem2nodes = numpy.array([])
+
+
+###########
+    # for i in range(ny):
+    #     for j in range(nx):
+    #         ii = nx-1-i
+    #         jj = j
+    #         if mat[ii][jj] == 1:
+    #             node_coords = numpy.append(node_coords, [[xmin+(jj*(xmax-xmin)/nx), ymin+(ii*(ymax-ymin)/ny), 0.0]], axis = 0)
+    # node_coords = numpy.delete(node_coords, 0, axis = 0)
+
+    # nnodes = node_coords.shape[0]
+###########
+    new_mat = add_one_line_of_zeros(mat)
+    for i in range(ny+1):
+        for j in range(nx):
+            ii = ny-i
+            jj = j
+            # print(jj, ii)
+            if new_mat[ii][jj] == 1 or (ii+1 < nx and new_mat[ii+1][jj] == 1):
+                # node_coords = numpy.append(node_coords, [[xmin+(jj*(xmax-xmin)/nx), ymin+(ii*(ymax-ymin)/ny), 0.0]], axis = 0)
+                x = j  # xmin+(jj*(xmax-xmin)/nx)
+                y = i  # ymin+(ii*(ymax-ymin)/ny)
+                xx = j + 1  # xmin+((jj+1)*(xmax-xmin)/nx)
+                # if [x, y, 0.0] not in node_coords:
+                #     continue
+                node_coords = numpy.append(node_coords, [[x, y, 0.0]], axis=0)
+                node_coords = numpy.append(node_coords, [[xx, y, 0.0]], axis=0)
+    node_coords = remove_duplicate(node_coords)
+    node_coords = numpy.delete(node_coords, 0, axis=0)
+
+    nnodes = node_coords.shape[0]
+###########
+    v = 0
+    for i in range(ny):
+        for j in range(nx):
+            if mat[i][j] == 1:
+                v += 1
+    p_elem2nodes = numpy.empty((v + 1,), dtype=numpy.int64)
+    p_elem2nodes[0] = 0
+    for i in range(0, v):
+        p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
+###########
+    elem2nodes = numpy.empty((v*nodes_per_elem,), dtype=numpy.int64)
+    last_track = 0
+    r = 0
+    for i in range(ny):
+        for j in range(nx):
+            ii = nx-1-i
+            jj = j
+            if mat[ii][jj] == 1:
+                gap = nx + 1 - ecart_node(mat, ii, jj, nx, ny)
+                elem2nodes[r+0] = last_track
+                elem2nodes[r+1] = last_track + 1
+                # here it was gap + last_track + 1
+                elem2nodes[r+2] = gap + last_track + 1
+                # here it was gap + last_track
+                elem2nodes[r+3] = gap + last_track
+                r += nodes_per_elem
+
+                if (jj+1 < nx and mat[ii][jj+1] == 1):
+                    last_track += 1
+                else:
+                    last_track += 2
+###########
+    print(elem2nodes)
+    # return node_coords, p_elem2nodes, elem2nodes
+
+
+def plot_mat_to_mesh(mat, xmin, xmax, ymin, ymax, color='blue'):
+    node_coords, p_elem2nodes, elem2nodes = mat_to_mesh(
+        mat, xmin, xmax, ymin, ymax)
+
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    nnodes = numpy.shape(node_coords)[0]
+    nelems = numpy.shape(p_elem2nodes)[0]
+    for elem in range(0, nelems-1):
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+        if xyz.shape[0] == 3:
+            matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
+                                   (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
+        else:
+            matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[3, 0], xyz[0, 0]),
+                                   (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[3, 1], xyz[0, 1]), color=color)
+
     matplotlib.pyplot.show()
     return
 
 
-def mat_to_mesh(mat):
-    pass
+def plot_mat_to_mesh_test(mat, xmin, xmax, ymin, ymax, color='blue'):
+    node_coords, p_elem2nodes, elem2nodes = mat_to_mesh(
+        mat, xmin, xmax, ymin, ymax)
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    nnodes = numpy.shape(node_coords)[0]
+    nelems = numpy.shape(p_elem2nodes)[0]
+    for node in range(nnodes):
+        matplotlib.pyplot.plot(
+            node_coords[node, 0], node_coords[node, 1], color=color, marker='o')
+    matplotlib.pyplot.show()
+    return
 
 
 mat_test = numpy.array([[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [
                        0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0]])
+mat_test_2 = numpy.array([[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [
+                         0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 0, 1, 0, 0, 0]])
+mat_test_3 = numpy.array([[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [
+                         1, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 0, 1, 0, 0, 0]])
+fractalized_mat_sample = fractalize_mat(mat_test)
+# ----------------------------------------------------------------------------
+
+
+def build_fractal(mat, xmin, xmax, ymin, ymax, nx, ny):
+    spacedim = 3
+    nnodes = (nx + 1) * (ny + 1)
+    node_coords = numpy.empty((nnodes, spacedim), dtype=numpy.float64)
+    nodes_per_elem = 4
+    nelems = mat.sum()
+    p_elem2nodes = numpy.empty((nelems + 1,), dtype=numpy.int64)
+    p_elem2nodes[0] = 0
+    for i in range(0, nelems):
+        p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
+    elem2nodes = numpy.empty((nelems * nodes_per_elem,), dtype=numpy.int64)
+
+    # elements
+    k = 0
+    for j in range(0, ny):
+        for i in range(0, nx):
+            if mat[i][j] == 1:
+                elem2nodes[k + 0] = j * (nx + 1) + i
+                elem2nodes[k + 1] = j * (nx + 1) + i + 1
+                elem2nodes[k + 2] = (j + 1) * (nx + 1) + i + 1
+                elem2nodes[k + 3] = (j + 1) * (nx + 1) + i
+                k += nodes_per_elem
+
+    # elem_type = numpy.empty((nelems,), dtype=numpy.int64)
+    # elem_type[:] = VTK_TRIANGLE
+
+    # coordinates of (nx+1)*(ny+1) nodes of cartesian grid
+    r = 0
+    for j in range(0, ny):
+        yy = ymin + (j * (ymax - ymin) / ny)
+        for i in range(0, nx):
+            xx = xmin + (i * (xmax - xmin) / nx)
+            node_coords[r, :] = xx, yy, 0.0
+            r += 1
+            print(r)
+
+    # local to global numbering
+    # node_l2g = numpy.arange(0, nnodes, 1, dtype=numpy.int64)
+
+    print(node_coords)
+
+
+def draw_fractal(mat, xmin, xmax, ymin, ymax, nx, ny, color='blue'):
+    node_coords, p_elem2nodes, elem2nodes = build_fractal(
+        mat, xmin, xmax, ymin, ymax, nx, ny)
+
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    nnodes = numpy.shape(node_coords)[0]
+    nelems = numpy.shape(p_elem2nodes)[0]
+    for elem in range(0, nelems-1):
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+        if xyz.shape[0] == 3:
+            matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
+                                   (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
+        else:
+            matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[3, 0], xyz[0, 0]),
+                                   (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[3, 1], xyz[0, 1]), color=color)
+
+    matplotlib.pyplot.show()
+    return
+
+
 if __name__ == '__main__':
 
     # run_exercise_a(10)
@@ -803,5 +1020,8 @@ if __name__ == '__main__':
     # _plot_fractal()
     # quadruple_mat(mat_test)
     # fractalize_mat(mat_test)
-    fractalize_mat_order(mat_test)
+    # fractalize_mat_order(mat_test)
+    # mat_to_mesh(mat_test_2, 0.0, 6.0, 0.0, 6.0)
+    # print(fractalized_mat_sample)
+    build_fractal(fractalized_mat_sample, 0.0, 1.0, 0.0, 1.0, 6, 6)
     print('End.')
