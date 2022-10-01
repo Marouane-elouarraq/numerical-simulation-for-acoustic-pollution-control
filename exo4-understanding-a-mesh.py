@@ -454,15 +454,11 @@ def helmholtz_resonator(xmin=0.0, xmax=2.0, ymin=0.0, ymax=1.0):
     nelems = nelemsx * nelemsy
     nnodes = (nelemsx + 1) * (nelemsy + 1)
 
-    node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_quadmesh(
-        xmin, xmax, ymin, ymax, nelemsx, nelemsy)
+    node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_quadmesh(xmin, xmax, ymin, ymax, nelemsx, nelemsy)
 
     # shape the resonator
-    # node_coords, p_elem2nodes, elem2nodes = remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, 30)
-    node_coords, p_elem2nodes, elem2nodes = remove_elem_to_mesh(
-        node_coords, p_elem2nodes, elem2nodes, 30)
-    node_coords, p_elem2nodes, elem2nodes = remove_elem_to_mesh(
-        node_coords, p_elem2nodes, elem2nodes, 161)
+    node_coords, p_elem2nodes, elem2nodes = remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, 30)
+    node_coords, p_elem2nodes, elem2nodes = remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, 161)
     # -- plot mesh
     fig = matplotlib.pyplot.figure(1)
     ax = matplotlib.pyplot.subplot(1, 1, 1)
@@ -471,6 +467,53 @@ def helmholtz_resonator(xmin=0.0, xmax=2.0, ymin=0.0, ymax=1.0):
     solutions._plot_mesh(p_elem2nodes, elem2nodes, node_coords, color='yellow')
     matplotlib.pyplot.show()
     return
+def geometrical_loc(nx, ny, xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0):
+    spacedim = 3
+    nnodes = (nx + 1) * (ny + 1)
+    node_coords = numpy.empty((nnodes, spacedim), dtype=numpy.float64)
+    nodes_per_elem = 3
+    nelems = nx * ny * 2-8
+    p_elem2nodes = numpy.empty((nelems + 1,), dtype=numpy.int64)
+    p_elem2nodes[0] = 0
+    for i in range(0, nelems):
+        p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
+    elem2nodes = numpy.empty((nelems * nodes_per_elem,), dtype=numpy.int64)
+
+    # elements
+    node_to_dodge = [(nx//2, ny//2), (nx//2-1, ny//2-1), (nx//2-1, ny//2), (nx//2, ny//2-1)]
+    k = 0
+    for j in range(0, ny):
+        for i in range(0, nx):
+            if (i, j) not in node_to_dodge:
+                elem2nodes[k + 0] = j * (nx + 1) + i
+                elem2nodes[k + 1] = j * (nx + 1) + i + 1
+                elem2nodes[k + 2] = (j + 1) * (nx + 1) + i + 1
+                k += nodes_per_elem
+                elem2nodes[k + 0] = j * (nx + 1) + i
+                elem2nodes[k + 1] = (j + 1) * (nx + 1) + i + 1
+                elem2nodes[k + 2] = (j + 1) * (nx + 1) + i
+                k += nodes_per_elem
+    # elem_type = numpy.empty((nelems,), dtype=numpy.int64)
+    # elem_type[:] = VTK_TRIANGLE
+
+    # coordinates of (nx+1)*(ny+1) nodes of cartesian grid
+    k = 0
+    for j in range(0, ny + 1):
+        yy = ymin + (j * (ymax - ymin) / ny)
+        for i in range(0, nx + 1):
+            xx = xmin + (i * (xmax - xmin) / nx)
+            node_coords[k, :] = xx, yy, 0.0
+            k += 1
+    
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    solutions._plot_mesh(p_elem2nodes, elem2nodes, node_coords, color='yellow')
+    matplotlib.pyplot.show()
+    return
+
+    # return node_coords, p_elem2nodes, elem2nodes
 
 
 def tight_helmholtz_resonator(xmin=0.0, xmax=2.0, ymin=0.0, ymax=1.0):
@@ -1105,5 +1148,6 @@ if __name__ == '__main__':
     # draw_fractal(fractalize_mat_order(mat_test), 0.0, 1.0, 0.0, 1.0)
     # fractalize_mat_order_bis(fractalize_mat_order(mat_test))
     # check_fractalize_mat_order_rec(3)
-    draw_fractal(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
+    # draw_fractal(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
+    geometrical_loc(10, 10)
     print('End.')

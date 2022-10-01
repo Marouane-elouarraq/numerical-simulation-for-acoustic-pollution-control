@@ -24,13 +24,57 @@ import random
 # MRG packages
 import zsolutions4students as solutions
 
+
+def geometrical_loc(nx, ny, xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0):
+    spacedim = 3
+    nnodes = (nx + 1) * (ny + 1)
+    node_coords = numpy.empty((nnodes, spacedim), dtype=numpy.float64)
+    nodes_per_elem = 3
+    nelems = nx * ny * 2-8
+    p_elem2nodes = numpy.empty((nelems + 1,), dtype=numpy.int64)
+    p_elem2nodes[0] = 0
+    for i in range(0, nelems):
+        p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
+    elem2nodes = numpy.empty((nelems * nodes_per_elem,), dtype=numpy.int64)
+
+    # elements
+    node_to_dodge = [(nx//2, ny//2), (nx//2-1, ny//2-1),
+                     (nx//2-1, ny//2), (nx//2, ny//2-1)]
+    k = 0
+    for j in range(0, ny):
+        for i in range(0, nx):
+            if (i, j) not in node_to_dodge:
+                elem2nodes[k + 0] = j * (nx + 1) + i
+                elem2nodes[k + 1] = j * (nx + 1) + i + 1
+                elem2nodes[k + 2] = (j + 1) * (nx + 1) + i + 1
+                k += nodes_per_elem
+                elem2nodes[k + 0] = j * (nx + 1) + i
+                elem2nodes[k + 1] = (j + 1) * (nx + 1) + i + 1
+                elem2nodes[k + 2] = (j + 1) * (nx + 1) + i
+                k += nodes_per_elem
+    # elem_type = numpy.empty((nelems,), dtype=numpy.int64)
+    # elem_type[:] = VTK_TRIANGLE
+
+    # coordinates of (nx+1)*(ny+1) nodes of cartesian grid
+    k = 0
+    for j in range(0, ny + 1):
+        yy = ymin + (j * (ymax - ymin) / ny)
+        for i in range(0, nx + 1):
+            xx = xmin + (i * (xmax - xmin) / nx)
+            node_coords[k, :] = xx, yy, 0.0
+            k += 1
+
+    return node_coords, p_elem2nodes, elem2nodes
+
+
 def shuffle(node_coords, p_elem2nodes, elem2nodes, xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nelemsx=10, nelemsy=10):
     n = len(node_coords)
     for i in range(n):
         node = node_coords[i]
         x, y, z = node[0], node[1], node[2]
         ratiox, ratioy = (xmax-xmin)/nelemsx, (ymax-ymin)/nelemsy
-        c1, c2 = random.choice([ratiox/3, 2*ratiox/3]), random.choice([ratioy/3, 2*ratioy/3])
+        c1, c2 = random.choice([ratiox/3, 2*ratiox/3]
+                               ), random.choice([ratioy/3, 2*ratioy/3])
         node_coords[i, :] = numpy.array([x+c1, y+c2, z])
     return node_coords, p_elem2nodes, elem2nodes
 
@@ -72,6 +116,114 @@ def run_exercise_solution_helmholtz_dddd():
     nodes_on_south = solutions._set_square_nodes_boundary_south(node_coords)
     nodes_on_east = solutions._set_square_nodes_boundary_east(node_coords)
     nodes_on_west = solutions._set_square_nodes_boundary_west(node_coords)
+    nodes_on_boundary = numpy.unique(numpy.concatenate(
+        (nodes_on_north, nodes_on_south, nodes_on_east, nodes_on_west)), )
+    # ..warning: the ids of the nodes on the boundary should be 'global' number.
+    # nodes_on_boundary = ...
+
+    # ..warning: for teaching purpose only
+    # -- set exact solution
+    solexact = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
+    laplacian_of_solexact = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
+    for i in range(nnodes):
+        x, y, z = node_coords[i, 0], node_coords[i, 1], node_coords[i, 2]
+        # set: u(x,y) = e^{ikx}
+        solexact[i] = numpy.exp(complex(0., 1.)*wavenumber*x)
+        laplacian_of_solexact[i] = complex(
+            0., 1.)*wavenumber*complex(0., 1.)*wavenumber * solexact[i]
+    # ..warning: end
+
+    # -- set dirichlet boundary conditions
+    values_at_nodes_on_boundary = numpy.zeros(
+        (nnodes, 1), dtype=numpy.complex128)
+    values_at_nodes_on_boundary[nodes_on_boundary] = solexact[nodes_on_boundary]
+
+    # -- set finite element matrices and right hand side
+    f_unassembled = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
+
+    # ..warning: for teaching purpose only
+    for i in range(nnodes):
+        # evaluate: (-\Delta - k^2) u(x,y) = ...
+        f_unassembled[i] = - laplacian_of_solexact[i] - \
+            (wavenumber ** 2) * solexact[i]
+    # ..warning: end
+
+    coef_k = numpy.ones((nelems, 1), dtype=numpy.complex128)
+    coef_m = numpy.ones((nelems, 1), dtype=numpy.complex128)
+    K, M, F = solutions._set_fem_assembly(
+        p_elem2nodes, elem2nodes, node_coords, f_unassembled, coef_k, coef_m)
+    A = K - wavenumber**2 * M
+    B = F
+
+    # -- apply Dirichlet boundary conditions
+    A, B = solutions._set_dirichlet_condition(
+        nodes_on_boundary, values_at_nodes_on_boundary, A, B)
+
+    # -- solve linear system
+    sol = scipy.linalg.solve(A, B)
+
+    # -- plot finite element solution
+    solreal = sol.reshape((sol.shape[0], ))
+    # _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solreal))
+    # _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solreal))
+    #
+    # ..warning: for teaching purpose only
+    # -- plot exact solution
+    solexactreal = solexact.reshape((solexact.shape[0], ))
+    _ = solutions._plot_contourf(
+        nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solexactreal))
+    _ = solutions._plot_contourf(
+        nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solexactreal))
+    # # ..warning: end
+
+    # ..warning: for teaching purpose only
+    # -- plot exact solution - approximate solution
+    solerr = solreal - solexactreal
+    norm_err = numpy.linalg.norm(solerr)
+    _ = solutions._plot_contourf(
+        nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solerr))
+    _ = solutions._plot_contourf(
+        nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solerr))
+    # # ..warning: end
+
+    return
+
+
+def geometrical_loc_sol():
+    # -- set equation parameters
+    wavenumber = numpy.pi
+    # -- set geometry parameters
+    xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
+    nelemsx, nelemsy = 10, 10
+
+    # -- generate mesh
+    nnodes = (nelemsx + 1) * (nelemsy + 1)
+    nelems = nelemsx * nelemsy * 2
+    # node_coords, p_elem2nodes, elem2nodes = geometrical_loc(nelemsx, nelemsy)
+    node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_square_trimesh(
+        xmin, xmax, ymin, ymax, nelemsx, nelemsy)
+    # .. todo:: Modify the line below to define a different geometry.
+    # p_elem2nodes, elem2nodes, node_coords, node_l2g = ...
+    nnodes = node_coords.shape[0]
+    nelems = len(p_elem2nodes)-1
+
+    # -- plot mesh
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    solutions._plot_mesh(p_elem2nodes, elem2nodes, node_coords, color='orange')
+    matplotlib.pyplot.show()
+
+    # -- set boundary geometry
+    # boundary composed of nodes
+    # .. todo:: Modify the lines below to select the ids of the nodes on the boundary of the different geometry.
+    nodes_on_north = solutions._set_square_nodes_boundary_north(node_coords)
+    nodes_on_south = solutions._set_square_nodes_boundary_south(node_coords)
+    nodes_on_east = solutions._set_square_nodes_boundary_east(node_coords)
+    nodes_on_west = solutions._set_square_nodes_boundary_west(node_coords)
+    # another list in this case should be added:
+    # extra_nodes = [48, 49, 50, 59, 61, 70, 71, 72]
     nodes_on_boundary = numpy.unique(numpy.concatenate(
         (nodes_on_north, nodes_on_south, nodes_on_east, nodes_on_west)), )
     # ..warning: the ids of the nodes on the boundary should be 'global' number.
@@ -382,6 +534,7 @@ def compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice):
         h_values.append(compute_h_for_triangle(a, b, c, choice))
     return (min(h_values), max(h_values), sum(h_values)/len(h_values))
 
+
 def solve_given_grid(node_coords, p_elem2nodes, elem2nodes):
     nnodes = node_coords.shape[0]
     nelems = len(p_elem2nodes)-1
@@ -394,7 +547,8 @@ def solve_given_grid(node_coords, p_elem2nodes, elem2nodes):
     nodes_on_south = solutions._set_square_nodes_boundary_south(node_coords)
     nodes_on_east = solutions._set_square_nodes_boundary_east(node_coords)
     nodes_on_west = solutions._set_square_nodes_boundary_west(node_coords)
-    nodes_on_boundary = numpy.unique(numpy.concatenate((nodes_on_north, nodes_on_south, nodes_on_east, nodes_on_west)), )
+    nodes_on_boundary = numpy.unique(numpy.concatenate(
+        (nodes_on_north, nodes_on_south, nodes_on_east, nodes_on_west)), )
     # ..warning: the ids of the nodes on the boundary should be 'global' number.
     # nodes_on_boundary = ...
 
@@ -448,6 +602,7 @@ def solve_given_grid(node_coords, p_elem2nodes, elem2nodes):
     norm_err = numpy.linalg.norm(solerr)
     return numpy.log(norm_err)
 
+
 def find_alpha_2(choice):
     error_values = []
     h_values, h_values1, h_values2 = [], [], []
@@ -459,21 +614,26 @@ def find_alpha_2(choice):
     # -- generate mesh
     nnodes = (nelemsx + 1) * (nelemsy + 1)
     nelems = nelemsx * nelemsy * 2
-    node_coords, p_elem2nodes, elem2nodes, node_l2g = solutions._set_square_trimesh(xmin, xmax, ymin, ymax, nelemsx, nelemsy)
+    node_coords, p_elem2nodes, elem2nodes, node_l2g = solutions._set_square_trimesh(
+        xmin, xmax, ymin, ymax, nelemsx, nelemsy)
     # -- generate other meshes by shuffling the original one
-    node_coords1, p_elem2nodes1, elem2nodes1, node_l2g1 = solutions._set_square_trimesh(xmin, xmax, ymin, ymax, 15, 15)
-    node_coords2, p_elem2nodes2, elem2nodes2, node_l2g2 = solutions._set_square_trimesh(xmin, xmax, ymin, ymax, 20, 20)
+    node_coords1, p_elem2nodes1, elem2nodes1, node_l2g1 = solutions._set_square_trimesh(
+        xmin, xmax, ymin, ymax, 15, 15)
+    node_coords2, p_elem2nodes2, elem2nodes2, node_l2g2 = solutions._set_square_trimesh(
+        xmin, xmax, ymin, ymax, 20, 20)
     # --
-    
-    h_maillage_grid = [compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice), compute_h_for_grid(node_coords1, p_elem2nodes1, elem2nodes1, choice), compute_h_for_grid(node_coords2, p_elem2nodes2, elem2nodes2, choice)]
+
+    h_maillage_grid = [compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice), compute_h_for_grid(
+        node_coords1, p_elem2nodes1, elem2nodes1, choice), compute_h_for_grid(node_coords2, p_elem2nodes2, elem2nodes2, choice)]
     h_values = [h_maillage[0] for h_maillage in h_maillage_grid]
     h_values1 = [h_maillage[1] for h_maillage in h_maillage_grid]
     h_values2 = [h_maillage[2] for h_maillage in h_maillage_grid]
     h_values_log = [numpy.log(x) for x in h_values]
     h_values_log1 = [numpy.log(x) for x in h_values1]
     h_values_log2 = [numpy.log(x) for x in h_values2]
-    
-    error_values = [solve_given_grid(node_coords, p_elem2nodes, elem2nodes), solve_given_grid(node_coords1, p_elem2nodes1, elem2nodes1), solve_given_grid(node_coords2, p_elem2nodes2, elem2nodes2)]
+
+    error_values = [solve_given_grid(node_coords, p_elem2nodes, elem2nodes), solve_given_grid(
+        node_coords1, p_elem2nodes1, elem2nodes1), solve_given_grid(node_coords2, p_elem2nodes2, elem2nodes2)]
 
     # slope, intercept, r_value, p_value, std_err = linregress(h_values_log, error_values_log)
     matplotlib.pyplot.plot(h_values_log, error_values)
@@ -485,6 +645,7 @@ def find_alpha_2(choice):
     matplotlib.pyplot.show()
     return
 
+
 def find_alpha_3(choice):
     error_values = []
     nelem_values = [5, 10, 15, 20, 25, 30]
@@ -492,7 +653,7 @@ def find_alpha_3(choice):
     nelem_values_log = [numpy.log(x) for x in nelem_values]
     # h_values_log = [numpy.log(x) for x in h_values]
     for nelem in nelem_values:
-        
+
         wavenumber = numpy.pi
         # -- set geometry parameters
         xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
@@ -508,9 +669,12 @@ def find_alpha_3(choice):
         nnodes = node_coords.shape[0]
         nelems = len(p_elem2nodes)-1
 
-        h_values1.append(compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice)[0])
-        h_values2.append(compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice)[1])
-        h_values3.append(compute_h_for_grid(node_coords, p_elem2nodes, elem2nodes, choice)[2])
+        h_values1.append(compute_h_for_grid(
+            node_coords, p_elem2nodes, elem2nodes, choice)[0])
+        h_values2.append(compute_h_for_grid(
+            node_coords, p_elem2nodes, elem2nodes, choice)[1])
+        h_values3.append(compute_h_for_grid(
+            node_coords, p_elem2nodes, elem2nodes, choice)[2])
         # -- set boundary geometry
         # boundary composed of nodes
         # .. todo:: Modify the lines below to select the ids of the nodes on the boundary of the different geometry.
@@ -580,13 +744,18 @@ def find_alpha_3(choice):
     h_values2_log = [numpy.log(x) for x in h_values2]
     h_values3_log = [numpy.log(x) for x in h_values3]
 
-
-    slope1, intercept1, r_value1, p_value1, std_err1 = linregress(h_values1_log, error_values_log)
-    slope2, intercept2, r_value2, p_value2, std_err2 = linregress(h_values2_log, error_values_log)
-    slope3, intercept3, r_value3, p_value3, std_err3 = linregress(h_values2_log, error_values_log)
-    matplotlib.pyplot.plot(h_values1_log, error_values_log, label = "{}".format(slope1))
-    matplotlib.pyplot.plot(h_values2_log, error_values_log, label = "{}".format(slope2))
-    matplotlib.pyplot.plot(h_values3_log, error_values_log, label = "{}".format(slope3))
+    slope1, intercept1, r_value1, p_value1, std_err1 = linregress(
+        h_values1_log, error_values_log)
+    slope2, intercept2, r_value2, p_value2, std_err2 = linregress(
+        h_values2_log, error_values_log)
+    slope3, intercept3, r_value3, p_value3, std_err3 = linregress(
+        h_values2_log, error_values_log)
+    matplotlib.pyplot.plot(h_values1_log, error_values_log,
+                           label="{}".format(slope1))
+    matplotlib.pyplot.plot(h_values2_log, error_values_log,
+                           label="{}".format(slope2))
+    matplotlib.pyplot.plot(h_values3_log, error_values_log,
+                           label="{}".format(slope3))
     matplotlib.pyplot.xlabel("nelem values (log scale)")
     matplotlib.pyplot.ylabel("error values (log scale)")
     # matplotlib.pyplot.title("slope : {}".format(slope))
@@ -596,12 +765,12 @@ def find_alpha_3(choice):
     # print(h_values1_log, h_values2_log, h_values3_log)
 
 
-
 if __name__ == '__main__':
 
     # run_exercise_solution_helmholtz_dddd()
+    geometrical_loc_sol()
     # find_alpha()
     # find_beta()
     # find_alpha_2()
-    find_alpha_3(0)
+    # find_alpha_3(0)
     print('End.')
