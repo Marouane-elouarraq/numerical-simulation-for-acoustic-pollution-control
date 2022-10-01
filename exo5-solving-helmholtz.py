@@ -328,11 +328,13 @@ def run_exercise_solution_helmholtz_dddd():
 
 
 def geometrical_loc_sol(mat):
-    # -- set equation parameters
-    wavenumber = numpy.pi*0.5
+
     # -- set geometry parameters
     xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
     nelemsx, nelemsy = mat.shape[1], mat.shape[0]
+    # -- set equation parameters
+    # wavenumber = numpy.pi*(nelemsx/5)
+    wavenumber = numpy.pi
 
     # -- generate mesh
     nnodes = (nelemsx + 1) * (nelemsy + 1)
