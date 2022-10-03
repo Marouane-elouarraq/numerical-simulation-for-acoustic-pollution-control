@@ -315,7 +315,7 @@ if __name__ == '__main__':
     # remove_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid)
     # remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid)
     # compute_barycenter_of_element(node_coords, p_elem2nodes, elem2nodes)
-    # draw_fractal(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
+    draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
     # split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes)
 
     print("End.")
