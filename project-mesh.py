@@ -491,7 +491,7 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     nnodes = numpy.shape(node_coords)[0]
     nelems = numpy.shape(p_elem2nodes)[0]
     for elem in range(0, nelems-1):
-        xyz = node_coords[elem2nodes[p_elem2nodes[elem]                                     :p_elem2nodes[elem+1]], :]
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
         if xyz.shape[0] == 3:
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
