@@ -187,12 +187,33 @@ def shuffle(node_coords, p_elem2nodes, elem2nodes, xmin=0.0, xmax=1.0, ymin=0.0,
     n = len(node_coords)
     for i in range(n):
         node = node_coords[i]
-        x, y, z = node[0], node[1], node[2]
-        ratiox, ratioy = (xmax-xmin)/nelemsx, (ymax-ymin)/nelemsy
-        c1, c2 = random.choice([ratiox/3, 2*ratiox/3]
-                               ), random.choice([ratioy/3, 2*ratioy/3])
-        node_coords[i, :] = numpy.array([x+c1, y+c2, z])
+        if not (node[0] == 0 or node[0] == 1 or node[1] == 0 or node[1] == 1):
+            x, y, z = node[0], node[1], node[2]
+            ratiox, ratioy = (xmax-xmin)/nelemsx, (ymax-ymin)/nelemsy
+            c1, c2 = random.choice([ratiox/3, 2*ratiox/3]), random.choice([ratioy/3, 2*ratioy/3])
+            node_coords[i, :] = numpy.array([x+c1, y+c2, z])
     return node_coords, p_elem2nodes, elem2nodes
+    
+
+# def shuffle_test(xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nx=10, ny=10):
+#     node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_trimesh(xmin, xmax, ymin, ymax, nx, ny)
+#     node_coords, p_elem2nodes, elem2nodes = shuffle(node_coords, p_elem2nodes, elem2nodes)
+#     fig = matplotlib.pyplot.figure(1)
+#     ax = matplotlib.pyplot.subplot(1, 1, 1)
+#     nnodes = numpy.shape(node_coords)[0]
+#     nelems = numpy.shape(p_elem2nodes)[0]
+#     for elem in range(0, nelems-1):
+#         xyz = node_coords[elem2nodes[p_elem2nodes[elem]
+#             :p_elem2nodes[elem+1]], :]
+#         if xyz.shape[0] == 3:
+#             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
+#                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color='blue')
+#         else:
+#             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[3, 0], xyz[0, 0]),
+#                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[3, 1], xyz[0, 1]), color='blue')
+
+#     matplotlib.pyplot.show()
+#     return
 
 
 # def hard_shuffle(node_coords, p_elem2nodes, elem2nodes, xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nelemsx=10, nelemsy=10):
@@ -1179,6 +1200,9 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     matplotlib.pyplot.show()
     return
 
+# --------------------------------------------
+def shift_internal():
+    pass
 
 if __name__ == '__main__':
 
@@ -1202,5 +1226,5 @@ if __name__ == '__main__':
     # draw_fractal(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
     # geometrical_loc(20, 20)
     # res_helmholtz()
-    print(detect_boundary_mat(fractalize_mat_order_rec(2)))
+    # print(detect_boundary_mat(fractalize_mat_order_rec(2)))
     print('End.')
