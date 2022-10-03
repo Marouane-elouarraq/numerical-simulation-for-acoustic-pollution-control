@@ -318,11 +318,17 @@ def split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes):
 
 def add_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid_coords):
     node_coords = numpy.append(node_coords, [nodeid_coords], axis=0)
+    nodes_per_elem = p_elem2nodes[1]
+    r = elem2nodes[-1]
+    if nodes_per_elem == 3:
+        p_elem2nodes = numpy.append(p_elem2nodes, [3*r], axis=0)
+    if nodes_per_elem == 4:
+        p_elem2nodes = numpy.append(p_elem2nodes, [4*r], axis=0)
     return node_coords, p_elem2nodes, elem2nodes,
 
 
 def add_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid2nodes):
-    elem2nodes.append(elemid2nodes)
+    elem2nodes = numpy.append(elem2nodes, [elemid2nodes], axis=0)
     return node_coords, p_elem2nodes, elem2nodes,
 
 
