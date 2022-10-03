@@ -424,6 +424,17 @@ def fractalize_mat(mat):
     return mat
 
 
+def equipe_mat(mat):
+    # always matrix = fractalize(mat_test)
+    M = mat.copy()
+    M[1, 3] = -1
+    M[2, 1] = -1
+    M[3, 4] = -1
+    M[4, 2] = -1
+
+    return M
+
+
 mat_test = numpy.array([[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [
                        0, 1, 1, 1, 1, 0], [0, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0]])
 fractalized_mat_sample_global = fractalize_mat(mat_test)
@@ -443,7 +454,7 @@ def quadruple_mat(mat):
     return new_mat
 
 
-def pagging(mat):
+def padding(mat):
     '''this function consist of adding zeros around the input matrix.'''
     n = mat.shape[0]
     new_mat = numpy.zeros((n+2, n+2), int)
@@ -458,21 +469,25 @@ def fractalize_mat_order_rec(order):
 
     fractalized_mat_sample = fractalize_mat_order_rec(order-1)
     n = fractalized_mat_sample.shape[0]
-    fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+    fractalized_mat_sample_pag = padding(fractalized_mat_sample)
     isolated_ones = []
     for i in range(n+2):
         for j in range(n+2):
-            if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
-                isolated_ones.append((i, j))
-            if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+            # if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+            #     isolated_ones.append((i, j))
+            # if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+            #     isolated_ones.append((i, j))
+            if fractalized_mat_sample_pag[i, j] == 1:
                 isolated_ones.append((i, j))
     new_mat = fractalized_mat_sample
-    new_mat = pagging(new_mat)
+    new_mat = padding(new_mat)
     new_mat = quadruple_mat(new_mat)
+
+    mat_to_add = equipe_mat(fractalized_mat_sample_global)
 
     for t in isolated_ones:
         new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4*t[0] -
-                                                                1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample_global
+                                                                1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + mat_to_add
 
     p = new_mat.shape[0]
     for i in range(p):
@@ -491,7 +506,8 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     nnodes = numpy.shape(node_coords)[0]
     nelems = numpy.shape(p_elem2nodes)[0]
     for elem in range(0, nelems-1):
-        xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]
+            :p_elem2nodes[elem+1]], :]
         if xyz.shape[0] == 3:
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
@@ -515,6 +531,6 @@ if __name__ == '__main__':
     # add_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid2nodes)
     # remove_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid)
     # remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid)
-    # draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
+    draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
 
     print("End.")

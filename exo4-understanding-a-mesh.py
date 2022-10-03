@@ -778,6 +778,24 @@ def fractalize_mat(mat):
 
     return mat
 
+def equipe_mat(mat):
+    # always matrix = fractalize(mat_test)
+    M = mat.copy()
+    M[1,3] = -1
+    M[2,1] = -1
+    M[3,4] = -1
+    M[4,2] = -1
+
+    return M
+
+def no_zero_island(mat):
+    n = mat.shape[0]
+    M = mat.copy()
+    for i in range(1,n-1):
+        for j in range(1,n-1):
+            if mat[i,j]==0 and mat[i-1,j]==1 and mat[i+1,j]==1 and mat[i,j-1]==1 and mat[i,j+1]==1:
+                M[i,j] = 1
+    return M 
 
 def pagging(mat):
     n = mat.shape[0]
@@ -834,6 +852,8 @@ def fractalize_mat_order(mat):
     # for _ in range(order):
 
 
+
+
 def fractalize_mat_order(mat):
     n = mat.shape[0]
     fractalized_mat_sample = fractalize_mat(mat_test)
@@ -865,6 +885,86 @@ def fractalize_mat_order(mat):
 
 
 fractalized_mat_sample_global = fractalize_mat(mat_test)
+
+def fractalize_mat_order_prime(mat):
+    n = mat.shape[0]
+    fractalized_mat_sample = fractalize_mat(mat_test)
+    fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+    isolated_ones = []
+    for i in range(n+2):
+        for j in range(n+2):
+            if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+            if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+                isolated_ones.append((i, j))
+    new_mat = fractalize_mat(mat_test)
+    new_mat = pagging(new_mat)
+    new_mat = quadruple_mat(new_mat)
+
+    mat_to_add = equipe_mat(fractalized_mat_sample_global)
+    for t in isolated_ones:
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *
+                                                                t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + mat_to_add
+
+    # idx_list = []
+    # m = new_mat.shape[0]
+    # for i in range(m-1):
+    #     for j in range(m-1):
+    #         if new_mat[i][j] == 0 and new_mat[i+1][j+1] == 1:
+    #             idx_list.append((i, j))
+    # for t in idx_list:
+    #     new_mat[t[0]:t[0]+6, t[1]:t[1]+6] = new_mat[t[0]:t[0]+6, t[1]:t[1]+6] + fractalized_mat_sample
+    p = new_mat.shape[0]
+    for i in range(p):
+        for j in range(p):
+            if new_mat[i][j] >= 2:
+                new_mat[i][j] = 1
+    new_mat = no_zero_island(new_mat)
+    # return new_mat
+    matplotlib.pyplot.matshow(new_mat)
+    matplotlib.pyplot.show()
+    return
+
+def fractalize_mat_order_prime_bis(mat):
+    n = mat.shape[0]
+    fractalized_mat_sample = fractalize_mat(mat_test)
+    fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+    isolated_ones = []
+    for i in range(n+2):
+        for j in range(n+2):
+            # if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+            #     isolated_ones.append((i, j))
+            # if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+            #     isolated_ones.append((i, j))
+            if fractalized_mat_sample_pag[i,j]==1:
+                isolated_ones.append((i, j))
+    new_mat = fractalize_mat(mat_test)
+    new_mat = pagging(new_mat)
+    new_mat = quadruple_mat(new_mat)
+
+    mat_to_add = equipe_mat(fractalized_mat_sample_global)
+    for t in isolated_ones:
+        new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4 *
+                                                                t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + mat_to_add
+
+    # idx_list = []
+    # m = new_mat.shape[0]
+    # for i in range(m-1):
+    #     for j in range(m-1):
+    #         if new_mat[i][j] == 0 and new_mat[i+1][j+1] == 1:
+    #             idx_list.append((i, j))
+    # for t in idx_list:
+    #     new_mat[t[0]:t[0]+6, t[1]:t[1]+6] = new_mat[t[0]:t[0]+6, t[1]:t[1]+6] + fractalized_mat_sample
+    p = new_mat.shape[0]
+    for i in range(p):
+        for j in range(p):
+            if new_mat[i][j] >= 2:
+                new_mat[i][j] = 1
+    new_mat = no_zero_island(new_mat)
+    # return new_mat
+    matplotlib.pyplot.matshow(new_mat)
+    matplotlib.pyplot.show()
+    return
 
 
 def fractalize_mat_order_bis(mat):
@@ -1179,6 +1279,21 @@ def detect_boundary_mat(mat):
                     node_to_dodge.append(j*(nx+1)+i)
     return node_to_dodge
 
+def detect_boundary_mat_ij(mat):
+    node_to_dodge = []
+    ny, nx = mat.shape[0], mat.shape[1]
+    for i in range(ny):
+        for j in range(nx):
+            ii = ny-1-i
+            jj = j
+            if mat[ii, jj] == 1:
+                if (jj-1 >= 0 and ii+1 < ny and mat[ii+1, jj-1] == 0) or (0 <= jj-1 and mat[ii, jj-1] == 0) or (0 <= jj-1 and 0 <= ii-1 and mat[ii-1, jj-1] == 0) or (0 <= ii-1 and mat[ii-1, jj] == 0) or (0 <= ii-1 and jj+1 < nx and mat[ii-1, jj+1] == 0) or (jj+1 < nx and mat[ii, jj+1] == 0) or (ii+1 < ny and jj+1 < nx and mat[ii+1, jj+1] == 0) or (ii+1 < ny and mat[ii+1, jj] == 0):
+                    node_to_dodge.append((ii, jj))
+    return node_to_dodge
+
+def draw_boundary(mat,xmin, xmax, ymin, ymax):
+    pass
+
 
 def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     node_coords, p_elem2nodes, elem2nodes = build_matrix(
@@ -1200,9 +1315,6 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     matplotlib.pyplot.show()
     return
 
-# --------------------------------------------
-def shift_internal():
-    pass
 
 if __name__ == '__main__':
 
@@ -1227,4 +1339,6 @@ if __name__ == '__main__':
     # geometrical_loc(20, 20)
     # res_helmholtz()
     # print(detect_boundary_mat(fractalize_mat_order_rec(2)))
+    # draw_boundary(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
+    fractalize_mat_order_prime_bis(mat_test)
     print('End.')
