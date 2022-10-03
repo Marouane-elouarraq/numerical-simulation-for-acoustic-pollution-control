@@ -22,10 +22,12 @@ import solutions
 
 
 def compute_distance(node1, node2):
+    '''function that computes the euclidean distance between two nodes node1 and node2'''
     return numpy.sqrt((node1[0]-node2[0])**2 + (node1[1]-node2[1])**2 + (node1[2]-node2[2])**2)
 
 
 def radius_inscribed(a, b, c):
+    '''function that computes the radius of the triangle's inscribed circle given the three sides of that triangle'''
     s = (a+b+c)/2
     rho = numpy.sqrt((s-a)*(s-b)*(s-c)/s)
     return rho
@@ -149,6 +151,10 @@ def compute_barycenter_of_element(node_coords, p_elem2nodes, elem2nodes):
 
 
 def build_matrix(mat, xmin, xmax, ymin, ymax):
+    '''function that build a mesh given the input matrix.
+    the input matrix contains zeros and ones, the presence of 1 at position (i,j) means the presence 
+    of an element in the output grid at the position (i,j)
+    '''
     spacedim = 3
     nx, ny = mat.shape[1], mat.shape[0]
     nnodes = (nx + 1) * (ny + 1)
@@ -161,7 +167,7 @@ def build_matrix(mat, xmin, xmax, ymin, ymax):
         p_elem2nodes[i + 1] = p_elem2nodes[i] + nodes_per_elem
     elem2nodes = numpy.empty((nelems * nodes_per_elem,), dtype=numpy.int64)
 
-    # elements
+    #
     k = 0
     for j in range(0, ny):
         for i in range(0, nx):
@@ -171,11 +177,7 @@ def build_matrix(mat, xmin, xmax, ymin, ymax):
                 elem2nodes[k + 2] = (j + 1) * (nx + 1) + i + 1
                 elem2nodes[k + 3] = (j + 1) * (nx + 1) + i
                 k += nodes_per_elem
-
-    # elem_type = numpy.empty((nelems,), dtype=numpy.int64)
-    # elem_type[:] = VTK_TRIANGLE
-
-    # coordinates of (nx+1)*(ny+1) nodes of cartesian grid
+    #
     r = 0
     for j in range(0, ny+1):
         yy = ymin + (j * (ymax - ymin) / ny)
@@ -184,14 +186,12 @@ def build_matrix(mat, xmin, xmax, ymin, ymax):
             node_coords[r, :] = xx, yy, 0.0
             r += 1
 
-    # local to global numbering
-    # node_l2g = numpy.arange(0, nnodes, 1, dtype=numpy.int64)
-
     return node_coords, p_elem2nodes, elem2nodes
 
 
 def fractalize_mat(mat):
-    # always matrix = mat_test
+    '''this function fractalise mat_test (the matrix given below) to the first order
+    this matrix will be useful later'''
     mat[0][2] = 1
     mat[1][3] = 0
 
@@ -213,6 +213,8 @@ fractalized_mat_sample_global = fractalize_mat(mat_test)
 
 
 def quadruple_mat(mat):
+    '''this function transform an nxn matrix into a 4nx4n matrix such that every element in the initial
+    matrix will give birth of 4x4 matrix containing only this element'''
     n = mat.shape[0]
     new_mat = numpy.zeros((4*n, 4*n), int)
     for i in range(0, n):
@@ -271,8 +273,7 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     nnodes = numpy.shape(node_coords)[0]
     nelems = numpy.shape(p_elem2nodes)[0]
     for elem in range(0, nelems-1):
-        xyz = node_coords[elem2nodes[p_elem2nodes[elem]
-            :p_elem2nodes[elem+1]], :]
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]                                     :p_elem2nodes[elem+1]], :]
         if xyz.shape[0] == 3:
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
@@ -314,7 +315,7 @@ if __name__ == '__main__':
     # remove_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid)
     # remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid)
     # compute_barycenter_of_element(node_coords, p_elem2nodes, elem2nodes)
-    draw_fractal(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
+    # draw_fractal(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
     # split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes)
 
     print("End.")
