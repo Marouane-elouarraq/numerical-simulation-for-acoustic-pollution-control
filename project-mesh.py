@@ -506,12 +506,15 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
 if __name__ == '__main__':
     # compute_aspect_ratio_of_element(node_coords, p_elem2nodes, elem2nodes)
     # compute_edge_length_factor_of_element(node_coords, p_elem2nodes, elem2nodes)
+    # shuffle_internal(node_coords, p_elem2nodes, elem2nodes)
+    # find_alpha()
+    # find_beta()
+    # compute_barycenter_of_element(node_coords, p_elem2nodes, elem2nodes)
+    # split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes)
     # add_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid_coords)
     # add_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid2nodes)
     # remove_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid)
     # remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid)
-    # compute_barycenter_of_element(node_coords, p_elem2nodes, elem2nodes)
     # draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
-    # split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes)
 
     print("End.")
