@@ -317,7 +317,7 @@ def split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes):
 
 
 def add_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid_coords):
-    node_coords.append(nodeid_coords)
+    node_coords = numpy.append(node_coords, [nodeid_coords], axis=0)
     return node_coords, p_elem2nodes, elem2nodes,
 
 

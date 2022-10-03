@@ -1340,5 +1340,5 @@ if __name__ == '__main__':
     # res_helmholtz()
     # print(detect_boundary_mat(fractalize_mat_order_rec(2)))
     # draw_boundary(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
-    fractalize_mat_order_prime_bis(mat_test)
+    # fractalize_mat_order_prime_bis(mat_test)
     print('End.')

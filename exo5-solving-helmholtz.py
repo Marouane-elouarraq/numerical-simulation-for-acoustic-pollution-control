@@ -921,7 +921,7 @@ if __name__ == '__main__':
 
     # run_exercise_solution_helmholtz_dddd()
     # geometrical_loc_sol(fractalize_mat_order_rec(2))
-    geometrical_loc_sol(mat_res_helmholtz())
+    # geometrical_loc_sol(mat_res_helmholtz())
     # find_alpha()
     # find_beta()
     # find_alpha_2()
