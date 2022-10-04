@@ -515,6 +515,7 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[3, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[3, 1], xyz[0, 1]), color=color)
 
+    matplotlib.pyplot.axis('off')
     matplotlib.pyplot.show()
     return
 # ---------------------------------------------------------------------------------------
@@ -622,7 +623,7 @@ if __name__ == '__main__':
     # add_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid2nodes)
     # remove_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid)
     # remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid)
-    # draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
-    draw_boundary(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
+    draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
+    # draw_boundary(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
 
     print("End.")

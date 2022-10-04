@@ -1446,6 +1446,7 @@ if __name__ == '__main__':
     # print(detect_boundary_mat(fractalize_mat_order_rec(2)))
     # draw_boundary(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
     # fractalize_mat_order_prime_bis(mat_test)
-    draw_boundary(fractalize_mat_order_prime_bis(mat_test), 0.0, 1.0, 0.0, 1.0)
+    # fractalize_mat_order_rec_double(3)
+    # draw_boundary(fractalize_mat_order_prime_bis(mat_test), 0.0, 1.0, 0.0, 1.0)
     # print(pagging(fractalized_mat_sample_global))
     print('End.')
