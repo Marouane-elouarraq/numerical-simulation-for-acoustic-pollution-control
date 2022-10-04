@@ -565,7 +565,6 @@ def extract_ij(position, nx, ny):
 
 
 def draw_boundary(mat, xmin, xmax, ymin, ymax):
-    # mat = pagging(fractalized_mat_sample)
     nx, ny = mat.shape[1], mat.shape[0]
     node_coords, p_elem2nodes, elem2nodes = build_matrix(
         mat, 0.0, 1.0, 0.0, 1.0)
@@ -623,5 +622,6 @@ if __name__ == '__main__':
     # remove_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid)
     # remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid)
     # draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
+    draw_boundary(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
 
     print("End.")
