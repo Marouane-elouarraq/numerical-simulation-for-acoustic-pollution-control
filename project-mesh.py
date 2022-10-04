@@ -19,7 +19,7 @@ import random
 
 # MRG packages
 import solutions
-
+# ---------------------------------------------------------------------------------------
 # Question 1 :
 
 
@@ -59,7 +59,7 @@ def compute_aspect_ratio_of_element(node_coords, p_elem2nodes, elem2nodes):
             elem_quality[i] = q
 
     return elem_quality
-
+# ---------------------------------------------------------------------------------------
 # Question 2 :
 
 
@@ -82,7 +82,7 @@ def compute_edge_length_factor_of_element(node_coords, p_elem2nodes, elem2nodes)
             m = min(lenghts)
             elem_quality[i] = 3*m/sum(lenghts)
     return elem_quality
-
+# ---------------------------------------------------------------------------------------
 # Question 3 :
 
 
@@ -97,7 +97,7 @@ def shuffle_internal(node_coords, p_elem2nodes, elem2nodes, xmin=0.0, xmax=1.0, 
                 [ratiox/3, 2*ratiox/3]), random.choice([ratioy/3, 2*ratioy/3])
             node_coords[i, :] = numpy.array([x+c1, y+c2, z])
     return node_coords, p_elem2nodes, elem2nodes
-
+# ---------------------------------------------------------------------------------------
 # Question 4 :
 
 
@@ -190,6 +190,7 @@ def find_alpha():
     matplotlib.pyplot.title("slope : {}".format(slope))
     matplotlib.pyplot.show()
     return
+# ---------------------------------------------------------------------------------------
 
 
 def find_beta():
@@ -278,7 +279,7 @@ def find_beta():
     matplotlib.pyplot.title("slope : {}".format(slope))
     matplotlib.pyplot.show()
     return
-
+# ---------------------------------------------------------------------------------------
 # Question 5 :
 
 
@@ -290,7 +291,7 @@ def compute_barycenter_of_element(node_coords, p_elem2nodes, elem2nodes):
         nodes = elem2nodes[p_elem2nodes[i]:p_elem2nodes[i+1]]
         elem_coords[i, :] = numpy.average(node_coords[nodes, :], axis=0)
     return elem_coords
-
+# ---------------------------------------------------------------------------------------
 # Question 6 :
 
 
@@ -312,7 +313,7 @@ def split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes):
         new_elem2nodes[u2:u3] = numpy.array(
             [necessary_nodes[0], necessary_nodes[2], necessary_nodes[3]])
     return new_node_coords, new_p_elem2nodes, new_elem2nodes
-
+# ---------------------------------------------------------------------------------------
 # Question 7 :
 
 
@@ -362,7 +363,7 @@ def remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid):
             curr_node_coords, curr_p_elem2nodes, curr_elem2nodes, nodeid-k)
         k += 1
     return curr_node_coords, curr_p_elem2nodes, curr_elem2nodes
-
+# ---------------------------------------------------------------------------------------
 
 # Question 8 :
 
@@ -506,8 +507,7 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     nnodes = numpy.shape(node_coords)[0]
     nelems = numpy.shape(p_elem2nodes)[0]
     for elem in range(0, nelems-1):
-        xyz = node_coords[elem2nodes[p_elem2nodes[elem]
-            :p_elem2nodes[elem+1]], :]
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]                                     :p_elem2nodes[elem+1]], :]
         if xyz.shape[0] == 3:
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
@@ -517,7 +517,7 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
 
     matplotlib.pyplot.show()
     return
-
+# ---------------------------------------------------------------------------------------
 # Question 9:
 
 
@@ -577,7 +577,8 @@ def draw_boundary(mat, xmin, xmax, ymin, ymax):
         i, j = extract_ij(position, nx, ny)
         # print(i,j)
         if adj_zeros(mat, i, j) != 0:
-            xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+            xyz = node_coords[elem2nodes[p_elem2nodes[elem]
+                :p_elem2nodes[elem+1]], :]
             X, Y = [], []
             if adj_zeros(mat, i, j) == 1:
                 if mat[i+1, j] == 0:
