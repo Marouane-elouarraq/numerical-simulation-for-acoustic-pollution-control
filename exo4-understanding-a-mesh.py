@@ -286,7 +286,7 @@ def shuffled_quadrangle_grid(xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nelemsx=10,
     for elemid in least_cluster:
         solutions._plot_elem(new_p_elem2nodes, new_elem2nodes,
                              new_node_coords, elemid, color='red')
-    matplotlib.pyplot.title('display aberrant elements in the shuffled grid')
+    matplotlib.pyplot.title('display aberrant elements in the shuffled grid(grid with quadrangles/edge length')
     matplotlib.pyplot.show()
     return
 
@@ -352,7 +352,7 @@ def shuffled_triangle_grid(xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nelemsx=10, n
     for elemid in least_cluster:
         solutions._plot_elem(new_p_elem2nodes, new_elem2nodes,
                              new_node_coords, elemid, color='red')
-    matplotlib.pyplot.title('display aberrant elements in the shuffled grid')
+    matplotlib.pyplot.title('display aberrant elements in the shuffled grid(grid with quadrangles/aspect ratio')
     matplotlib.pyplot.show()
     return
 
@@ -1323,7 +1323,7 @@ if __name__ == '__main__':
     # run_exercise_c()
     # run_exercise_d()
     # helmholtz_resonator()
-    # criteria_functions_testing()
+    criteria_functions_testing()
     # shuffled_quadrangle_grid()
     # test_split()
     # _plot_fractal()
