@@ -190,10 +190,11 @@ def shuffle(node_coords, p_elem2nodes, elem2nodes, xmin=0.0, xmax=1.0, ymin=0.0,
         if not (node[0] == 0 or node[0] == 1 or node[1] == 0 or node[1] == 1):
             x, y, z = node[0], node[1], node[2]
             ratiox, ratioy = (xmax-xmin)/nelemsx, (ymax-ymin)/nelemsy
-            c1, c2 = random.choice([ratiox/3, 2*ratiox/3]), random.choice([ratioy/3, 2*ratioy/3])
+            c1, c2 = random.choice(
+                [ratiox/3, 2*ratiox/3]), random.choice([ratioy/3, 2*ratioy/3])
             node_coords[i, :] = numpy.array([x+c1, y+c2, z])
     return node_coords, p_elem2nodes, elem2nodes
-    
+
 
 # def shuffle_test(xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nx=10, ny=10):
 #     node_coords, node_l2g, p_elem2nodes, elem2nodes = solutions._set_trimesh(xmin, xmax, ymin, ymax, nx, ny)
@@ -286,7 +287,8 @@ def shuffled_quadrangle_grid(xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nelemsx=10,
     for elemid in least_cluster:
         solutions._plot_elem(new_p_elem2nodes, new_elem2nodes,
                              new_node_coords, elemid, color='red')
-    matplotlib.pyplot.title('display aberrant elements in the shuffled grid(grid with quadrangles/edge length')
+    matplotlib.pyplot.title(
+        'display aberrant elements in the shuffled grid(grid with quadrangles/edge length')
     matplotlib.pyplot.show()
     return
 
@@ -352,7 +354,8 @@ def shuffled_triangle_grid(xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nelemsx=10, n
     for elemid in least_cluster:
         solutions._plot_elem(new_p_elem2nodes, new_elem2nodes,
                              new_node_coords, elemid, color='red')
-    matplotlib.pyplot.title('display aberrant elements in the shuffled grid(grid with quadrangles/aspect ratio')
+    matplotlib.pyplot.title(
+        'display aberrant elements in the shuffled grid(grid with quadrangles/aspect ratio')
     matplotlib.pyplot.show()
     return
 
@@ -778,24 +781,27 @@ def fractalize_mat(mat):
 
     return mat
 
+
 def equipe_mat(mat):
     # always matrix = fractalize(mat_test)
     M = mat.copy()
-    M[1,3] = -1
-    M[2,1] = -1
-    M[3,4] = -1
-    M[4,2] = -1
+    M[1, 3] = -1
+    M[2, 1] = -1
+    M[3, 4] = -1
+    M[4, 2] = -1
 
     return M
+
 
 def no_zero_island(mat):
     n = mat.shape[0]
     M = mat.copy()
-    for i in range(1,n-1):
-        for j in range(1,n-1):
-            if mat[i,j]==0 and mat[i-1,j]==1 and mat[i+1,j]==1 and mat[i,j-1]==1 and mat[i,j+1]==1:
-                M[i,j] = 1
-    return M 
+    for i in range(1, n-1):
+        for j in range(1, n-1):
+            if mat[i, j] == 0 and mat[i-1, j] == 1 and mat[i+1, j] == 1 and mat[i, j-1] == 1 and mat[i, j+1] == 1:
+                M[i, j] = 1
+    return M
+
 
 def pagging(mat):
     n = mat.shape[0]
@@ -852,8 +858,6 @@ def fractalize_mat_order(mat):
     # for _ in range(order):
 
 
-
-
 def fractalize_mat_order(mat):
     n = mat.shape[0]
     fractalized_mat_sample = fractalize_mat(mat_test)
@@ -885,6 +889,7 @@ def fractalize_mat_order(mat):
 
 
 fractalized_mat_sample_global = fractalize_mat(mat_test)
+
 
 def fractalize_mat_order_prime(mat):
     n = mat.shape[0]
@@ -925,6 +930,7 @@ def fractalize_mat_order_prime(mat):
     matplotlib.pyplot.show()
     return
 
+
 def fractalize_mat_order_prime_bis(mat):
     n = mat.shape[0]
     fractalized_mat_sample = fractalize_mat(mat_test)
@@ -936,7 +942,7 @@ def fractalize_mat_order_prime_bis(mat):
             #     isolated_ones.append((i, j))
             # if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
             #     isolated_ones.append((i, j))
-            if fractalized_mat_sample_pag[i,j]==1:
+            if fractalized_mat_sample_pag[i, j] == 1:
                 isolated_ones.append((i, j))
     new_mat = fractalize_mat(mat_test)
     new_mat = pagging(new_mat)
@@ -1279,6 +1285,7 @@ def detect_boundary_mat(mat):
                     node_to_dodge.append(j*(nx+1)+i)
     return node_to_dodge
 
+
 def detect_boundary_mat_ij(mat):
     node_to_dodge = []
     ny, nx = mat.shape[0], mat.shape[1]
@@ -1291,7 +1298,8 @@ def detect_boundary_mat_ij(mat):
                     node_to_dodge.append((ii, jj))
     return node_to_dodge
 
-def draw_boundary(mat,xmin, xmax, ymin, ymax):
+
+def draw_boundary(mat, xmin, xmax, ymin, ymax):
     pass
 
 
