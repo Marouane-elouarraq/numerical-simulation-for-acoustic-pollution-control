@@ -623,7 +623,7 @@ if __name__ == '__main__':
     # add_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid2nodes)
     # remove_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid)
     # remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid)
-    draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
-    # draw_boundary(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
+    # draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
+    # draw_boundary(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
 
     print("End.")

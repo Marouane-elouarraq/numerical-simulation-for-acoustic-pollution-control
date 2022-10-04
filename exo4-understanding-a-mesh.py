@@ -288,7 +288,7 @@ def shuffled_quadrangle_grid(xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nelemsx=10,
         solutions._plot_elem(new_p_elem2nodes, new_elem2nodes,
                              new_node_coords, elemid, color='red')
     matplotlib.pyplot.title(
-        'display aberrant elements in the shuffled grid(grid with quadrangles/edge length')
+        'display aberrant elements(grid with quadrangles/edge length)')
     matplotlib.pyplot.show()
     return
 
@@ -355,7 +355,7 @@ def shuffled_triangle_grid(xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, nelemsx=10, n
         solutions._plot_elem(new_p_elem2nodes, new_elem2nodes,
                              new_node_coords, elemid, color='red')
     matplotlib.pyplot.title(
-        'display aberrant elements in the shuffled grid(grid with quadrangles/aspect ratio')
+        'display aberrant elements(grid with quadrangles/egde length)')
     matplotlib.pyplot.show()
     return
 
@@ -1447,6 +1447,6 @@ if __name__ == '__main__':
     # draw_boundary(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
     # fractalize_mat_order_prime_bis(mat_test)
     # fractalize_mat_order_rec_double(3)
-    # draw_boundary(fractalize_mat_order_prime_bis(mat_test), 0.0, 1.0, 0.0, 1.0)
+    draw_boundary(pagging(fractalized_mat_sample_global), 0.0, 1.0, 0.0, 1.0)
     # print(pagging(fractalized_mat_sample_global))
     print('End.')
