@@ -518,6 +518,97 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     matplotlib.pyplot.show()
     return
 
+# Question 9:
+
+
+def adj_zeros(mat, i, j):
+    s = 0
+    if mat[i+1, j] == 0:
+        s += 1
+    if mat[i, j+1] == 0:
+        s += 1
+    if mat[i-1, j] == 0:
+        s += 1
+    if mat[i, j-1] == 0:
+        s += 1
+    return s
+
+
+def chain_to_draw(mat, i, j):
+    # in this case adj(mat,i,j)=3
+    t = [(i-1, j), (i, j-1), (i+1, j), (i, j+1)]
+    for k in range(4):
+        if mat[t[k][0], t[k][1]] == 1:
+            return [k % 4, (k+1) % 4, (k+2) % 4, (k+3) % 4]
+
+
+def chain_to_draw_prime(mat, i, j):
+    t = [(i, j-1), (i+1, j), (i, j+1), (i-1, j)]
+    l = []
+    for k in range(4):
+        if mat[t[k][0], t[k][1]] == 0:
+            l.append(k)
+    if l == [0, 1]:
+        return [0, 1, 2]
+    if l == [0, 3]:
+        return [3, 0, 1]
+    if l == [1, 2]:
+        return [1, 2, 3]
+    if l == [2, 3]:
+        return [2, 3, 0]
+
+
+def extract_ij(position, nx, ny):
+    i = position % (nx+1)
+    j = (position-i)//(nx+1)
+    return i, j
+
+
+def draw_boundary(mat, xmin, xmax, ymin, ymax):
+    # mat = pagging(fractalized_mat_sample)
+    nx, ny = mat.shape[1], mat.shape[0]
+    node_coords, p_elem2nodes, elem2nodes = build_matrix(
+        mat, 0.0, 1.0, 0.0, 1.0)
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    nnodes = numpy.shape(node_coords)[0]
+    nelems = numpy.shape(p_elem2nodes)[0]
+    for elem in range(0, nelems-1):
+        position = elem2nodes[p_elem2nodes[elem]]
+        i, j = extract_ij(position, nx, ny)
+        # print(i,j)
+        if adj_zeros(mat, i, j) != 0:
+            xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+            X, Y = [], []
+            if adj_zeros(mat, i, j) == 1:
+                if mat[i+1, j] == 0:
+                    matplotlib.pyplot.plot((xyz[1, 0], xyz[2, 0]),
+                                           (xyz[1, 1], xyz[2, 1]), color='blue')
+                if mat[i, j+1] == 0:
+                    matplotlib.pyplot.plot((xyz[2, 0], xyz[3, 0]),
+                                           (xyz[2, 1], xyz[3, 1]), color='blue')
+                if mat[i-1, j] == 0:
+                    matplotlib.pyplot.plot((xyz[3, 0], xyz[0, 0]),
+                                           (xyz[3, 1], xyz[0, 1]), color='blue')
+                if mat[i, j-1] == 0:
+                    matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0]),
+                                           (xyz[0, 1], xyz[1, 1]), color='blue')
+
+            if adj_zeros(mat, i, j) == 2:
+                t = chain_to_draw_prime(mat, i, j)
+                X = [xyz[t[0], 0], xyz[t[1], 0], xyz[t[2], 0]]
+                Y = [xyz[t[0], 1], xyz[t[1], 1], xyz[t[2], 1]]
+                matplotlib.pyplot.plot(X, Y, color='blue')
+
+            if adj_zeros(mat, i, j) == 3:
+                t = chain_to_draw(mat, i, j)
+                X = [xyz[t[0], 0], xyz[t[1], 0], xyz[t[2], 0], xyz[t[3], 0]]
+                Y = [xyz[t[0], 1], xyz[t[1], 1], xyz[t[2], 1], xyz[t[3], 1]]
+                matplotlib.pyplot.plot(X, Y, color='blue')
+
+    matplotlib.pyplot.show()
+    return
+
 
 if __name__ == '__main__':
     # compute_aspect_ratio_of_element(node_coords, p_elem2nodes, elem2nodes)
@@ -531,6 +622,6 @@ if __name__ == '__main__':
     # add_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid2nodes)
     # remove_node_to_mesh(node_coords, p_elem2nodes, elem2nodes, nodeid)
     # remove_elem_to_mesh(node_coords, p_elem2nodes, elem2nodes, elemid)
-    draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
+    # draw_fractal(fractalize_mat_order_rec(3), 0.0, 1.0, 0.0, 1.0)
 
     print("End.")

@@ -967,10 +967,10 @@ def fractalize_mat_order_prime_bis(mat):
             if new_mat[i][j] >= 2:
                 new_mat[i][j] = 1
     new_mat = no_zero_island(new_mat)
-    # return new_mat
-    matplotlib.pyplot.matshow(new_mat)
-    matplotlib.pyplot.show()
-    return
+    return new_mat
+    # matplotlib.pyplot.matshow(new_mat)
+    # matplotlib.pyplot.show()
+    # return
 
 
 def fractalize_mat_order_bis(mat):
@@ -1298,9 +1298,106 @@ def detect_boundary_mat_ij(mat):
                     node_to_dodge.append((ii, jj))
     return node_to_dodge
 
+def adj_zeros(mat,i,j):
+    s = 0
+    if mat[i+1,j] == 0:
+        s += 1
+    if mat[i,j+1] == 0:
+        s += 1
+    if mat[i-1,j] == 0:
+        s += 1
+    if mat[i,j-1] == 0:
+        s += 1
+    return s
+    
+def chain_to_draw(mat,i,j):
+    #in this case adj(mat,i,j)=3
+    t = [(i-1,j),(i,j-1),(i+1,j),(i,j+1)]
+    for k in range(4):
+        if mat[t[k][0],t[k][1]] == 1:
+            return [k%4, (k+1)%4, (k+2)%4, (k+3)%4]
+def chain_to_draw_prime(mat,i,j):
+    t = [(i,j-1),(i+1,j),(i,j+1),(i-1,j)]
+    l = []
+    for k in range(4):
+        if mat[t[k][0],t[k][1]] == 0:
+            l.append(k)
+    if l == [0,1]:
+        return [0,1,2]
+    if l == [0,3]:
+        return [3,0,1]
+    if l == [1,2]:
+        return [1,2,3]
+    if l == [2,3]:
+        return [2,3,0]
+        
+
+def extract_ij(position, nx, ny):
+    i = position%(nx+1)
+    j = (position-i)//(nx+1)
+    return i,j
 
 def draw_boundary(mat, xmin, xmax, ymin, ymax):
-    pass
+    # mat = pagging(fractalized_mat_sample)
+    nx, ny = mat.shape[1], mat.shape[0]
+    node_coords, p_elem2nodes, elem2nodes = build_matrix(mat, 0.0, 1.0, 0.0, 1.0)
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    nnodes = numpy.shape(node_coords)[0]
+    nelems = numpy.shape(p_elem2nodes)[0]
+    for elem in range(0, nelems-1):
+        position = elem2nodes[p_elem2nodes[elem]]
+        i,j = extract_ij(position, nx, ny)
+        # print(i,j)
+        if adj_zeros(mat, i, j) != 0:
+            xyz = node_coords[elem2nodes[p_elem2nodes[elem]:p_elem2nodes[elem+1]], :]
+            X,Y = [],[]
+            if adj_zeros(mat,i,j)==1:
+                if mat[i+1,j] == 0:
+                    matplotlib.pyplot.plot((xyz[1, 0], xyz[2, 0]),
+                                    (xyz[1, 1], xyz[2, 1]), color='blue')
+                    # X=([xyz[0,0], xyz[1,0]])
+                #     Y=([xyz[0,1], xyz[1,1]])
+                if mat[i,j+1] == 0:
+                    matplotlib.pyplot.plot((xyz[2, 0], xyz[3, 0]),
+                                    (xyz[2, 1], xyz[3, 1]), color='blue')
+                #     X=([xyz[1,0], xyz[2,0]])
+                #     Y=([xyz[1,1], xyz[2,1]])
+                if mat[i-1,j] == 0:
+                    matplotlib.pyplot.plot((xyz[3, 0], xyz[0, 0]),
+                                    (xyz[3, 1], xyz[0, 1]), color='blue')
+                #     X=([xyz[2,0], xyz[3,0]])
+                #     Y=([xyz[2,1], xyz[3,1]])
+                if mat[i,j-1] == 0:
+                    matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0]),
+                                    (xyz[0, 1], xyz[1, 1]), color='blue')
+                #     X=([xyz[3,0], xyz[0,0]])
+                #     Y=([xyz[3,1], xyz[0,1]])
+                # print(X,Y)
+                # matplotlib.pyplot.plot(X, Y, color='blue')
+                # matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[3, 0], xyz[0, 0]),
+                #                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[3, 1], xyz[0, 1]), color='blue')
+            if adj_zeros(mat,i,j)==2:
+                # print(adj_zeros(mat, i, j))
+                t = chain_to_draw_prime(mat,i,j)
+                # if t!=None:
+                X=[xyz[t[0],0],xyz[t[1],0],xyz[t[2],0]]
+                Y=[xyz[t[0],1],xyz[t[1],1],xyz[t[2],1]]
+                matplotlib.pyplot.plot(X, Y, color='blue')
+            
+            if adj_zeros(mat,i,j)==3:
+                # print(adj_zeros(mat, i, j))
+                t = chain_to_draw(mat,i,j)
+                # if t!=None:
+                X=[xyz[t[0],0],xyz[t[1],0],xyz[t[2],0],xyz[t[3],0]]
+                Y=[xyz[t[0],1],xyz[t[1],1],xyz[t[2],1],xyz[t[3],1]]
+                matplotlib.pyplot.plot(X, Y, color='blue')
+        # X = list(set(X))
+        # Y = list(set(Y))
+        # print(len(X)==len(Y))
+        # matplotlib.pyplot.plot(X, Y, color='blue')
+    matplotlib.pyplot.show()
+    return 
 
 
 def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
@@ -1331,7 +1428,7 @@ if __name__ == '__main__':
     # run_exercise_c()
     # run_exercise_d()
     # helmholtz_resonator()
-    criteria_functions_testing()
+    # criteria_functions_testing()
     # shuffled_quadrangle_grid()
     # test_split()
     # _plot_fractal()
@@ -1349,4 +1446,6 @@ if __name__ == '__main__':
     # print(detect_boundary_mat(fractalize_mat_order_rec(2)))
     # draw_boundary(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
     # fractalize_mat_order_prime_bis(mat_test)
+    draw_boundary(fractalize_mat_order_prime_bis(mat_test), 0.0, 1.0, 0.0, 1.0)
+    # print(pagging(fractalized_mat_sample_global))
     print('End.')
