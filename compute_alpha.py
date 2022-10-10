@@ -60,6 +60,14 @@ def compute_alpha(omega, material):
     alpha_h = 1.0  # tortuosity
     c_0 = 340.0
 
+    # # Béton
+    # phi = 0.98  # porosity
+    # gamma_p = 7.0 / 5.0
+    # sigma = 15000.0  # resitivity
+    # rho_0 = 1.2
+    # alpha_h = 1.0  # tortuosity
+    # c_0 = 340.0
+
     # parameters of the geometry
     L = 0.01
 
