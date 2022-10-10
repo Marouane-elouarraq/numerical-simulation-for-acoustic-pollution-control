@@ -44,12 +44,20 @@ def compute_alpha(omega, material):
     alpha_h = 0.0
     c_0 = 0.0
 
-    # Birch LT
-    phi = 0.529  # porosity
+    # # Birch LT
+    # phi = 0.529  # porosity
+    # gamma_p = 7.0 / 5.0
+    # sigma = 151429.0  # resitivity
+    # rho_0 = 1.2
+    # alpha_h = 1.37  # tortuosity
+    # c_0 = 340.0
+
+    # Laine de verre
+    phi = 0.98  # porosity
     gamma_p = 7.0 / 5.0
-    sigma = 151429.0  # resitivity
+    sigma = 15000.0  # resitivity
     rho_0 = 1.2
-    alpha_h = 1.37  # tortuosity
+    alpha_h = 1.0  # tortuosity
     c_0 = 340.0
 
     # parameters of the geometry
@@ -163,7 +171,7 @@ def compute_alpha(omega, material):
     @Memoize
     def alpha(omega):
         alpha_0 = numpy.array(complex(40.0, -40.0))
-        temp = real_to_complex(minimize(lambda z: numpy.real(sum_e_k(omega)(real_to_complex(z))), complex_to_real(alpha_0), tol=1e-4).x)
+        temp = real_to_complex(minimize(lambda z: numpy.real(sum_e_k(omega)(real_to_complex(z))), complex_to_real(alpha_0), method='BFGS', tol=1e-4).x)
         print(temp, "------", "je suis temp")
         return temp
 
@@ -250,7 +258,7 @@ def run_plot_alpha(material):
 
 
 def run():
-    material = 'BIRCHLT'
+    material = 'Laine de verre'
     run_compute_alpha(material)
     run_plot_alpha(material)
     return
