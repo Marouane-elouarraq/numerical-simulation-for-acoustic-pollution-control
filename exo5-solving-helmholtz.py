@@ -198,6 +198,45 @@ def pagging(mat):
     return new_mat
 
 
+# def fractalize_mat_order_rec(order):
+#     if order == 1:
+#         return fractalized_mat_sample_global
+
+#     fractalized_mat_sample = fractalize_mat_order_rec(order-1)
+#     n = fractalized_mat_sample.shape[0]
+#     fractalized_mat_sample_pag = pagging(fractalized_mat_sample)
+#     isolated_ones = []
+#     for i in range(n+2):
+#         for j in range(n+2):
+#             if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+#                 isolated_ones.append((i, j))
+#             if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+#                 isolated_ones.append((i, j))
+#     new_mat = fractalized_mat_sample
+#     new_mat = pagging(new_mat)
+#     new_mat = quadruple_mat(new_mat)
+
+#     for t in isolated_ones:
+#         new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4*t[0] -
+#                                                                 1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample_global
+
+#     p = new_mat.shape[0]
+#     for i in range(p):
+#         for j in range(p):
+#             if new_mat[i][j] >= 2:
+#                 new_mat[i][j] = 1
+#     return new_mat
+# ------------------------------------------------------
+def equipe_mat(mat):
+    # always matrix = fractalize(mat_test)
+    M = mat.copy()
+    M[1, 3] = -1
+    M[2, 1] = -1
+    M[3, 4] = -1
+    M[4, 2] = -1
+
+    return M
+
 def fractalize_mat_order_rec(order):
     if order == 1:
         return fractalized_mat_sample_global
@@ -208,17 +247,21 @@ def fractalize_mat_order_rec(order):
     isolated_ones = []
     for i in range(n+2):
         for j in range(n+2):
-            if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
-                isolated_ones.append((i, j))
-            if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+            # if 0 <= i-1 < n+2 and 0 <= i+1 < n+2 and fractalized_mat_sample_pag[i-1][j] == 0 and fractalized_mat_sample_pag[i+1][j] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+            #     isolated_ones.append((i, j))
+            # if 0 <= j-1 < n+2 and 0 <= j+1 < n+2 and fractalized_mat_sample_pag[i][j-1] == 0 and fractalized_mat_sample_pag[i][j+1] == 0 and fractalized_mat_sample_pag[i][j] == 1:
+            #     isolated_ones.append((i, j))
+            if fractalized_mat_sample_pag[i, j] == 1:
                 isolated_ones.append((i, j))
     new_mat = fractalized_mat_sample
     new_mat = pagging(new_mat)
     new_mat = quadruple_mat(new_mat)
 
+    mat_to_add = equipe_mat(fractalized_mat_sample_global)
+
     for t in isolated_ones:
         new_mat[4*t[0]-1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] = new_mat[4*t[0] -
-                                                                1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + fractalized_mat_sample_global
+                                                                1:4*t[0]+5, 4*t[1]-1:4*t[1]+5] + mat_to_add
 
     p = new_mat.shape[0]
     for i in range(p):
@@ -337,7 +380,7 @@ def run_exercise_solution_helmholtz_dddd():
     return
 
 
-def geometrical_loc_sol(mat):
+def geometrical_loc_sol(mat, r):
 
     # -- set geometry parameters
     xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
@@ -345,8 +388,10 @@ def geometrical_loc_sol(mat):
     # -- set equation parameters
     # wavenumber = numpy.pi*(nelemsx/5)
     # wavenumber = numpy.pi
-    wavenumber = 1/(2*((ymax-ymin)/nelemsy)) # according to F-Simon presentation (slide13)
-
+    h = (ymax-ymin)/nelemsy
+    wavenumber = numpy.pi/(r*h)
+    # wavenumber = 1/(2*((ymax-ymin)/nelemsy)) # according to F-Simon presentation (slide13)
+    # wavenumber = 1/(2*((ymax-ymin)/nelemsy))
     # -- generate mesh
     nnodes = (nelemsx + 1) * (nelemsy + 1)
     nelems = nelemsx * nelemsy * 2
@@ -920,8 +965,8 @@ def find_alpha_3(choice):
 if __name__ == '__main__':
 
     # run_exercise_solution_helmholtz_dddd()
-    # geometrical_loc_sol(fractalize_mat_order_rec(2))
-    # geometrical_loc_sol(mat_res_helmholtz())
+    # geometrical_loc_sol(fractalize_mat_order_rec(1), 5)
+    # geometrical_loc_sol(mat_res_helmholtz(), 10)
     # find_alpha()
     # find_beta()
     # find_alpha_2()
