@@ -237,6 +237,7 @@ def equipe_mat(mat):
 
     return M
 
+
 def fractalize_mat_order_rec(order):
     if order == 1:
         return fractalized_mat_sample_global
