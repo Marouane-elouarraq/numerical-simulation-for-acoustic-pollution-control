@@ -274,6 +274,25 @@ def fractalize_mat_order_rec(order):
 # ..todo: Uncomment for displaying limited digits
 # numpy.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
+def split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes):
+    new_node_coords = node_coords
+    number_elem = len(p_elem2nodes)-1
+    spacedim = node_coords.shape[1]
+    new_p_elem2nodes = numpy.zeros(2*number_elem+1, dtype=int)
+    for i in range(0, 2*number_elem+1):
+        new_p_elem2nodes[i] = 3*i
+    new_elem2nodes = numpy.zeros(6*number_elem, dtype=int)
+    for i in range(number_elem):
+        x, y = p_elem2nodes[i], p_elem2nodes[i+1]
+        u1, u2, u3 = new_p_elem2nodes[2 *
+                                      i], new_p_elem2nodes[2*i+1], new_p_elem2nodes[2*i+2]
+        necessary_nodes = elem2nodes[x:y]
+        new_elem2nodes[u1:u2] = numpy.array(
+            [necessary_nodes[0], necessary_nodes[1], necessary_nodes[2]])
+        new_elem2nodes[u2:u3] = numpy.array(
+            [necessary_nodes[0], necessary_nodes[2], necessary_nodes[3]])
+    return new_node_coords, new_p_elem2nodes, new_elem2nodes
+
 
 def run_exercise_solution_helmholtz_dddd():
 
@@ -491,8 +510,126 @@ def geometrical_loc_sol(mat, r):
     _ = solutions._plot_contourf(
         nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solerr))
     # # ..warning: end
-
+    print(nodes_on_boundary)
     return
+
+####################################################################################################
+def geometrical_loc_sol_bis(mat, r):
+    
+    # -- set geometry parameters
+    xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
+    nelemsx, nelemsy = mat.shape[1], mat.shape[0]
+    # -- set equation parameters
+    # wavenumber = numpy.pi*(nelemsx/5)
+    # wavenumber = numpy.pi
+    h = (ymax-ymin)/nelemsy
+    wavenumber = numpy.pi/(r*h)
+    # wavenumber = 1/(2*((ymax-ymin)/nelemsy)) # according to F-Simon presentation (slide13)
+    # wavenumber = 1/(2*((ymax-ymin)/nelemsy))
+    # -- generate mesh
+    nnodes = (nelemsx + 1) * (nelemsy + 1)
+    nelems = nelemsx * nelemsy * 2
+    node_coords, p_elem2nodes, elem2nodes, node_l2g = solutions._set_square_trimesh(
+        xmin, xmax, ymin, ymax, nelemsx, nelemsy)
+    # .. todo:: Modify the line below to define a different geometry.
+    # p_elem2nodes, elem2nodes, node_coords, node_l2g = ...
+    
+
+    # -- plot mesh
+    new_node_coords, new_p_elem2nodes, new_elem2nodes = build_matrix(
+        mat, xmin, xmax, ymin, ymax)
+    new_node_coords, new_p_elem2nodes, new_elem2nodes = split_quadrangle_into_triangle(new_node_coords, new_p_elem2nodes, new_elem2nodes)
+    fig = matplotlib.pyplot.figure(1)
+    ax = matplotlib.pyplot.subplot(1, 1, 1)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    solutions._plot_mesh(new_p_elem2nodes, new_elem2nodes,
+                         new_node_coords, color='orange')
+    matplotlib.pyplot.show()
+
+    nnodes = node_coords.shape[0]
+    nelems = len(new_p_elem2nodes)-1
+
+    # -- set boundary geometry
+    # boundary composed of nodes
+    # .. todo:: Modify the lines below to select the ids of the nodes on the boundary of the different geometry.
+    # nodes_on_north = solutions._set_square_nodes_boundary_north(node_coords)
+    # nodes_on_south = solutions._set_square_nodes_boundary_south(node_coords)
+    # nodes_on_east = solutions._set_square_nodes_boundary_east(node_coords)
+    # nodes_on_west = solutions._set_square_nodes_boundary_west(node_coords)
+    node_to_dodge = detect_boundary_mat(mat)
+    # in this case we should add some extra nodes
+    nodes_on_boundary = numpy.unique(numpy.array(node_to_dodge), )
+    # ..warning: the ids of the nodes on the boundary should be 'global' number.
+    # nodes_on_boundary = ...
+
+    # ..warning: for teaching purpose only
+    # -- set exact solution
+    solexact = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
+    laplacian_of_solexact = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
+    for i in range(nnodes):
+        x, y, z = node_coords[i, 0], node_coords[i, 1], node_coords[i, 2]
+        # set: u(x,y) = e^{ikx}
+        solexact[i] = numpy.exp(complex(0., 1.)*wavenumber*x)
+        laplacian_of_solexact[i] = complex(
+            0., 1.)*wavenumber*complex(0., 1.)*wavenumber * solexact[i]
+    # ..warning: end
+
+    # -- set dirichlet boundary conditions
+    values_at_nodes_on_boundary = numpy.zeros(
+        (nnodes, 1), dtype=numpy.complex128)
+    values_at_nodes_on_boundary[nodes_on_boundary] = solexact[nodes_on_boundary]
+
+    # -- set finite element matrices and right hand side
+    f_unassembled = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
+
+    # ..warning: for teaching purpose only
+    for i in range(nnodes):
+        # evaluate: (-\Delta - k^2) u(x,y) = ...
+        f_unassembled[i] = - laplacian_of_solexact[i] - \
+            (wavenumber ** 2) * solexact[i]
+    # ..warning: end
+    # print(node_to_dodge)
+    coef_k = numpy.ones((nelems, 1), dtype=numpy.complex128)
+    coef_m = numpy.ones((nelems, 1), dtype=numpy.complex128)
+    K, M, F = solutions._set_fem_assembly(
+        p_elem2nodes, elem2nodes, node_coords, f_unassembled, coef_k, coef_m)
+    A = K - wavenumber**2 * M
+    B = F
+    print(elem2nodes[p_elem2nodes[0]:p_elem2nodes[1]])
+    # -- apply Dirichlet boundary conditions
+    A, B = solutions._set_dirichlet_condition(
+        nodes_on_boundary, values_at_nodes_on_boundary, A, B)
+
+    # -- solve linear system
+    sol = scipy.linalg.solve(A, B)
+
+    # -- plot finite element solution
+    solreal = sol.reshape((sol.shape[0], ))
+    # _ = solutions._plot_contourf(
+    #     nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solreal))
+    # _ = solutions._plot_contourf(
+    #     nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solreal))
+    #
+    # ..warning: for teaching purpose only
+    # -- plot exact solution
+    solexactreal = solexact.reshape((solexact.shape[0], ))
+    # _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solexactreal))
+    # _ = solutions._plot_contourf(nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solexactreal))
+    # # ..warning: end
+
+    # ..warning: for teaching purpose only
+    # -- plot exact solution - approximate solution
+    solerr = solreal - solexactreal
+    norm_err = numpy.linalg.norm(solerr)
+    # _ = solutions._plot_contourf(
+    #     nelems, p_elem2nodes, elem2nodes, node_coords, numpy.real(solerr))
+    # _ = solutions._plot_contourf(
+    #     nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solerr))
+    # # ..warning: end
+    
+    return
+####################################################################################################
 
 
 def find_alpha():
@@ -962,12 +1099,92 @@ def find_alpha_3(choice):
     return
     # print(h_values1_log, h_values2_log, h_values3_log)
 
+def eig_for_given_solution(mat, r):
+    xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
+    nelemsx, nelemsy = mat.shape[1], mat.shape[0]
+    nnodes = (nelemsx + 1) * (nelemsy + 1)
+    nelems = nelemsx * nelemsy * 2
+    node_coords, p_elem2nodes, elem2nodes, node_l2g = solutions._set_square_trimesh(xmin, xmax, ymin, ymax, nelemsx, nelemsy)
+
+    nnodes = node_coords.shape[0]
+    nelems = len(p_elem2nodes)-1
+
+    # -- plot mesh
+    new_node_coords, new_p_elem2nodes, new_elem2nodes = build_matrix(mat, xmin, xmax, ymin, ymax)
+
+    nnodes = node_coords.shape[0]
+    nelems = len(p_elem2nodes)-1
+    h = (ymax-ymin)/nelemsy
+    wavenumber = numpy.pi/(r*h)
+    # -- set boundary geometry
+    # boundary composed of nodes
+    node_to_dodge = detect_boundary_mat(mat)
+    # in this case we should add some extra nodes
+    nodes_on_boundary = numpy.unique(numpy.array(node_to_dodge), )
+
+    # ..warning: for teaching purpose only
+    # -- set exact solution
+    solexact = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
+    laplacian_of_solexact = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
+    for i in range(nnodes):
+        x, y, z = node_coords[i, 0], node_coords[i, 1], node_coords[i, 2]
+        # set: u(x,y) = e^{ikx}
+        solexact[i] = numpy.exp(complex(0., 1.)*wavenumber*x)
+        laplacian_of_solexact[i] = complex(
+            0., 1.)*wavenumber*complex(0., 1.)*wavenumber * solexact[i]
+    # ..warning: end
+
+    # -- set dirichlet boundary conditions
+    values_at_nodes_on_boundary = numpy.zeros(
+        (nnodes, 1), dtype=numpy.complex128)
+    values_at_nodes_on_boundary[nodes_on_boundary] = solexact[nodes_on_boundary]
+
+    # -- set finite element matrices and right hand side
+    f_unassembled = numpy.zeros((nnodes, 1), dtype=numpy.complex128)
+
+    # ..warning: for teaching purpose only
+    for i in range(nnodes):
+        # evaluate: (-\Delta - k^2) u(x,y) = ...
+        f_unassembled[i] = - laplacian_of_solexact[i] - \
+            (wavenumber ** 2) * solexact[i]
+    # ..warning: end
+
+    coef_k = numpy.ones((nelems, 1), dtype=numpy.complex128)
+    coef_m = numpy.ones((nelems, 1), dtype=numpy.complex128)
+    K, M, F = solutions._set_fem_assembly(p_elem2nodes, elem2nodes, node_coords, f_unassembled, coef_k, coef_m)
+    A = K - wavenumber**2 * M
+    B = F
+
+    # -- apply Dirichlet boundary conditions
+    A, B = solutions._set_dirichlet_condition(
+        nodes_on_boundary, values_at_nodes_on_boundary, A, B)
+
+    # -- solve linear system
+    sol = scipy.linalg.solve(A, B)
+
+    # -- plot finite element solution
+    solreal = sol.reshape((sol.shape[0], ))
+
+    solexactreal = solexact.reshape((solexact.shape[0], ))
+
+    solerr = solreal - solexactreal
+    norm_err = numpy.linalg.norm(solerr)
+    spectrum = numpy.linalg.eigvals(A)
+    spectrum = numpy.unique(spectrum)
+    im_spectrum = numpy.real(spectrum)/numpy.pi
+    re_spectrum = numpy.imag(spectrum)/numpy.pi
+    matplotlib.pyplot.plot(re_spectrum, im_spectrum)
+    matplotlib.pyplot.show()
+    # print(sol)
+    return
+
 
 if __name__ == '__main__':
 
     # run_exercise_solution_helmholtz_dddd()
     # geometrical_loc_sol(fractalize_mat_order_rec(1), 5)
     # geometrical_loc_sol(mat_res_helmholtz(), 10)
+    eig_for_given_solution(fractalize_mat_order_rec(1), 5)
     # find_alpha()
     # find_beta()
     # find_alpha_2()
