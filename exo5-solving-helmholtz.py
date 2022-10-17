@@ -274,6 +274,7 @@ def fractalize_mat_order_rec(order):
 # ..todo: Uncomment for displaying limited digits
 # numpy.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
+
 def split_quadrangle_into_triangle(node_coords, p_elem2nodes, elem2nodes):
     new_node_coords = node_coords
     number_elem = len(p_elem2nodes)-1
@@ -514,8 +515,10 @@ def geometrical_loc_sol(mat, r):
     return
 
 ####################################################################################################
+
+
 def geometrical_loc_sol_bis(mat, r):
-    
+
     # -- set geometry parameters
     xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
     nelemsx, nelemsy = mat.shape[1], mat.shape[0]
@@ -533,12 +536,12 @@ def geometrical_loc_sol_bis(mat, r):
         xmin, xmax, ymin, ymax, nelemsx, nelemsy)
     # .. todo:: Modify the line below to define a different geometry.
     # p_elem2nodes, elem2nodes, node_coords, node_l2g = ...
-    
 
     # -- plot mesh
     new_node_coords, new_p_elem2nodes, new_elem2nodes = build_matrix(
         mat, xmin, xmax, ymin, ymax)
-    new_node_coords, new_p_elem2nodes, new_elem2nodes = split_quadrangle_into_triangle(new_node_coords, new_p_elem2nodes, new_elem2nodes)
+    new_node_coords, new_p_elem2nodes, new_elem2nodes = split_quadrangle_into_triangle(
+        new_node_coords, new_p_elem2nodes, new_elem2nodes)
     fig = matplotlib.pyplot.figure(1)
     ax = matplotlib.pyplot.subplot(1, 1, 1)
     ax.set_aspect('equal')
@@ -627,7 +630,7 @@ def geometrical_loc_sol_bis(mat, r):
     # _ = solutions._plot_contourf(
     #     nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solerr))
     # # ..warning: end
-    
+
     return
 ####################################################################################################
 
@@ -1099,18 +1102,21 @@ def find_alpha_3(choice):
     return
     # print(h_values1_log, h_values2_log, h_values3_log)
 
+
 def eig_for_given_solution(mat, r):
     xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
     nelemsx, nelemsy = mat.shape[1], mat.shape[0]
     nnodes = (nelemsx + 1) * (nelemsy + 1)
     nelems = nelemsx * nelemsy * 2
-    node_coords, p_elem2nodes, elem2nodes, node_l2g = solutions._set_square_trimesh(xmin, xmax, ymin, ymax, nelemsx, nelemsy)
+    node_coords, p_elem2nodes, elem2nodes, node_l2g = solutions._set_square_trimesh(
+        xmin, xmax, ymin, ymax, nelemsx, nelemsy)
 
     nnodes = node_coords.shape[0]
     nelems = len(p_elem2nodes)-1
 
     # -- plot mesh
-    new_node_coords, new_p_elem2nodes, new_elem2nodes = build_matrix(mat, xmin, xmax, ymin, ymax)
+    new_node_coords, new_p_elem2nodes, new_elem2nodes = build_matrix(
+        mat, xmin, xmax, ymin, ymax)
 
     nnodes = node_coords.shape[0]
     nelems = len(p_elem2nodes)-1
@@ -1151,7 +1157,8 @@ def eig_for_given_solution(mat, r):
 
     coef_k = numpy.ones((nelems, 1), dtype=numpy.complex128)
     coef_m = numpy.ones((nelems, 1), dtype=numpy.complex128)
-    K, M, F = solutions._set_fem_assembly(p_elem2nodes, elem2nodes, node_coords, f_unassembled, coef_k, coef_m)
+    K, M, F = solutions._set_fem_assembly(
+        p_elem2nodes, elem2nodes, node_coords, f_unassembled, coef_k, coef_m)
     A = K - wavenumber**2 * M
     B = F
 
