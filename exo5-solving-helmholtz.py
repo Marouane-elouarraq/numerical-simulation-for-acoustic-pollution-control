@@ -189,6 +189,17 @@ def quadruple_mat(mat):
                         new_mat[4*i+x][4*j+y] = 1
     return new_mat
 
+def duplicate_mat(mat):
+    n = mat.shape[0]
+    new_mat = numpy.zeros((2*n, 2*n), int)
+    for i in range(0, n):
+        for j in range(0, n):
+            if mat[i][j] == 1:
+                for x in range(2):
+                    for y in range(2):
+                        new_mat[2*i+x][2*j+y] = 1
+    return new_mat
+
 
 def pagging(mat):
     n = mat.shape[0]
@@ -402,7 +413,7 @@ def run_exercise_solution_helmholtz_dddd():
 
 
 def geometrical_loc_sol(mat, r):
-
+    mat = duplicate_mat(mat) # so that we can have more details on the the grid (un maillage plus fin)
     # -- set geometry parameters
     xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
     nelemsx, nelemsy = mat.shape[1], mat.shape[0]
@@ -511,7 +522,7 @@ def geometrical_loc_sol(mat, r):
     _ = solutions._plot_contourf(
         nelems, p_elem2nodes, elem2nodes, node_coords, numpy.imag(solerr))
     # # ..warning: end
-    print(nodes_on_boundary)
+    print(nelemsx)
     return
 
 ####################################################################################################
@@ -1178,20 +1189,22 @@ def eig_for_given_solution(mat, r):
     norm_err = numpy.linalg.norm(solerr)
     spectrum = numpy.linalg.eigvals(A)
     spectrum = numpy.unique(spectrum)
-    im_spectrum = numpy.real(spectrum)/numpy.pi
-    re_spectrum = numpy.imag(spectrum)/numpy.pi
+    im_spectrum = numpy.real(sol)/numpy.pi
+    re_spectrum = numpy.imag(sol)/numpy.pi
+    im_spectrum = numpy.sort(im_spectrum, axis=None)
+    re_spectrum = numpy.sort(re_spectrum, axis=None)
     matplotlib.pyplot.plot(re_spectrum, im_spectrum)
     matplotlib.pyplot.show()
-    # print(sol)
+    # print(sol.shape)
     return
 
 
 if __name__ == '__main__':
 
     # run_exercise_solution_helmholtz_dddd()
-    # geometrical_loc_sol(fractalize_mat_order_rec(1), 5)
-    # geometrical_loc_sol(mat_res_helmholtz(), 10)
-    eig_for_given_solution(fractalize_mat_order_rec(1), 5)
+    geometrical_loc_sol(fractalize_mat_order_rec(2), 2)
+    # geometrical_loc_sol(mat_res_helmholtz(), 5)
+    # eig_for_given_solution(fractalize_mat_order_rec(1), 5)
     # find_alpha()
     # find_beta()
     # find_alpha_2()
