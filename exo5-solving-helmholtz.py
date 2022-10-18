@@ -189,6 +189,7 @@ def quadruple_mat(mat):
                         new_mat[4*i+x][4*j+y] = 1
     return new_mat
 
+
 def duplicate_mat(mat):
     n = mat.shape[0]
     new_mat = numpy.zeros((2*n, 2*n), int)
@@ -413,7 +414,8 @@ def run_exercise_solution_helmholtz_dddd():
 
 
 def geometrical_loc_sol(mat, r):
-    mat = duplicate_mat(mat) # so that we can have more details on the the grid (un maillage plus fin)
+    # so that we can have more details on the the grid (un maillage plus fin)
+    mat = duplicate_mat(mat)
     # -- set geometry parameters
     xmin, xmax, ymin, ymax = 0.0, 1.0, 0.0, 1.0
     nelemsx, nelemsy = mat.shape[1], mat.shape[0]
