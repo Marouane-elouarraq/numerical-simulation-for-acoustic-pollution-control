@@ -1200,15 +1200,25 @@ def eig_for_given_solution(mat, r):
     # print(sol.shape)
     return
 
+def eigenmode(n=1, m=1):
+    x = numpy.linspace(0, 1, 200)
+    y = numpy.linspace(0, 1, 200)
+    X, Y = numpy.meshgrid(x, y)
+    Z = numpy.sin(m*numpy.pi*X)*numpy.sin(n*numpy.pi*Y)
+    matplotlib.pyplot.pcolormesh(X, Y, Z)
+    matplotlib.pyplot.show()
+    return
+
 
 if __name__ == '__main__':
 
     # run_exercise_solution_helmholtz_dddd()
-    geometrical_loc_sol(fractalize_mat_order_rec(2), 2)
+    # geometrical_loc_sol(fractalize_mat_order_rec(2), 2)
     # geometrical_loc_sol(mat_res_helmholtz(), 5)
     # eig_for_given_solution(fractalize_mat_order_rec(1), 5)
     # find_alpha()
     # find_beta()
     # find_alpha_2()
     # find_alpha_3(0)
+    # eigenmode(2, 3)
     print('End.')
