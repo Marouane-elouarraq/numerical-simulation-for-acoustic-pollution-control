@@ -204,8 +204,7 @@ def draw_fractal(mat, xmin, xmax, ymin, ymax, color='blue'):
     nnodes = numpy.shape(node_coords)[0]
     nelems = numpy.shape(p_elem2nodes)[0]
     for elem in range(0, nelems-1):
-        xyz = node_coords[elem2nodes[p_elem2nodes[elem]
-            :p_elem2nodes[elem+1]], :]
+        xyz = node_coords[elem2nodes[p_elem2nodes[elem]                                     :p_elem2nodes[elem+1]], :]
         if xyz.shape[0] == 3:
             matplotlib.pyplot.plot((xyz[0, 0], xyz[1, 0], xyz[2, 0], xyz[0, 0]),
                                    (xyz[0, 1], xyz[1, 1], xyz[2, 1], xyz[0, 1]), color=color)
@@ -359,9 +358,34 @@ def eigenmode(n=1, m=1):
 # Question 4:
 
 
+def mat_res_helmholtz_variant():
+    '''This a variant of the ordinary Helmholtz resonator'''
+    nx, ny = 20, 20
+    M = numpy.ones(18)
+    M = padded_mat(M)
+    for i in range(1, 4):
+        for j in range(9, 11):
+            M[i, j] = 0
+    for i in range(6, 9):
+        for j in range(9, 11):
+            M[i, j] = 0
+    for i in range(11, 14):
+        for j in range(9, 11):
+            M[i, j] = 0
+    for i in range(16, 20):
+        for j in range(9, 11):
+            M[i, j] = 0
+
+    return M
+# To generate this geometry run : draw_fractal(mat_res_helmholtz_variant(), 0.0, 1.0, 0.0, 1.0)
+# To vizualise the solution on this geometry run :  geometrical_loc_sol(mat_res_helmholtz_variant(), 5)
+
+
 if __name__ == '__main__':
-    # draw_fractal(fractalize_mat_order_rec(2), 0.0, 1.0, 0.0, 1.0)
+    draw_fractal(mat_res_helmholtz_variant(), 0.0, 1.0, 0.0, 1.0)
     # geometrical_loc_sol(fractalize_mat_order_rec(2), 2)
     # geometrical_loc_sol(mat_res_helmholtz(), 5)
     # eigenmode(5, 2)
+    # draw_fractal(mat_res_helmholtz_variant(), 0.0, 1.0, 0.0, 1.0)
+    # geometrical_loc_sol(mat_res_helmholtz_variant(), 5)
     print('End!')
